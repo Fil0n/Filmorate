@@ -9,13 +9,16 @@ import java.time.LocalDate;
 
 @Data
 public class User {
+
     private Long id;
-    @Email (message = "Email не валиднен")
+
+    @Email(message = "Email не валиднен")
     @NonNull
     private final String email;
 
     @NonNull
     private final String login;
+
     private String name;
 
     @PastOrPresent(message = "Не может быть в будущем")

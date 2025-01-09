@@ -8,11 +8,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.yandex.practicum.filmrate.exeption.ConditionsNotMetException;
 import ru.yandex.practicum.filmrate.exeption.NotFoundException;
 import ru.yandex.practicum.filmrate.model.User;
 
-import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,10 +31,7 @@ public class UserController {
     @PostMapping
     public User create(@Valid @RequestBody User user) {
         log.info("Пытаемся добавить пользователя", user);
-//        String validate = validateWithCheckId(user);
-//        if (!validate.isBlank()) {
-//            throw new ConditionsNotMetException(validate);
-//        }
+        validate(user);
 
         user.setId(getNextId());
         users.put(user.getId(), user);
@@ -47,10 +42,7 @@ public class UserController {
     @PutMapping
     public User update(@Valid @RequestBody User newUser) {
         log.info("Пытаемся обновить пользователя пользователя", newUser);
-        String validate = validateWithCheckId(newUser);
-        if (!validate.isBlank()) {
-            throw new ConditionsNotMetException(validate);
-        }
+        validate(newUser);
 
         if (!users.containsKey(newUser.getId())) {
             throw new NotFoundException("Пост с id = " + newUser.getId() + " не найден");
@@ -81,27 +73,13 @@ public class UserController {
         return "";
     }
 
-//    private String validate(User user) {
-//        String error = "";
-//        log.info("Валидация логина пользователя");
-//        if (user.getLogin() == null || user.getLogin().contains(" ")){
-//            log.error("Логин пользователя (%s) пустой либо содержит пробелы.", user.getLogin());
-//            error += "Логин не может быть пустым и содержать пробелы \n";
-//        }
-//
-//        log.info("Валидация имени пользователя пользователя");
-//        if(user.getName() == null || user.getName().isBlank() || user.getName().isEmpty() && error.isBlank()) {
-//            log.info("Имя пользователя не найдено и замененно на логин");
-//            user.setName(user.getLogin());
-//        }
-//
-//        log.info("Валидация даты рождения пользователя");
-//        if(user.getBirthday() != null && user.getBirthday().isAfter(LocalDate.now())){
-//            log.error("Дата рождения (%s) должна быть меньше текущей даты", user.getBirthday());
-//            error += "Дата рождения не может быть в будущем";
-//        }
-//
-//        return error;
-//    }
+    public void validate(User user) {
+        log.info("User id = {}", user.getId());
+        if (user.getName() == null || user.getName().isBlank()) {
+            log.info("Имя для отображения пустое — используем использован логин : {}", user.getLogin());
+            user.setName(user.getLogin());
+        }
+
+    }
 
 }
