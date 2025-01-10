@@ -46,9 +46,8 @@ public class FilmController {
             throw new NotFoundException("Пост с id = " + newFilm.getId() + " не найден");
         }
 
-        Film oldFilm = films.get(newFilm.getId());
-        oldFilm = newFilm;
-        return oldFilm;
+        films.replace(newFilm.getId(), newFilm);
+        return newFilm;
     }
 
     private long getNextId() {

@@ -23,17 +23,17 @@ class FilmControllerTest {
 
     @Test
     void createFilm() {
-        Film newFilm = controller.create(film);
-        assertEquals(film.getName(), newFilm.getName(), "Имя не совпадает");
-        assertEquals(film.getReleaseDate().toString(), newFilm.getReleaseDate().toString(), "Дата не совпадает");
+        Film expectedFilm = controller.create(film);
+        assertEquals(film.getName(), expectedFilm.getName(), "Имя не совпадает");
+        assertEquals(film.getReleaseDate().toString(), expectedFilm.getReleaseDate().toString(), "Дата не совпадает");
     }
 
     @Test
     void updateFilm() {
         film.setDuration(30);
-        Film newFilm = controller.update(film);
-        assertEquals(film.getName(), newFilm.getName(), "Имя не совпадает");
-        assertEquals(film.getReleaseDate().toString(), newFilm.getReleaseDate().toString(), "Дата не совпадает");
-        assertEquals(film.getReleaseDate().toString(), newFilm.getReleaseDate().toString(), "Дата не совпадает");
+        Film expectedFilm = controller.update(film);
+        assertEquals(film.getName(), expectedFilm.getName(), "Имя не совпадает");
+        assertEquals(film.getReleaseDate().toString(), expectedFilm.getReleaseDate().toString(), "Дата не совпадает");
+        assertEquals(film.getReleaseDate().toString(), expectedFilm.getReleaseDate().toString(), "Дата не совпадает");
     }
 }

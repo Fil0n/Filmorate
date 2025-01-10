@@ -48,10 +48,9 @@ public class UserController {
             throw new NotFoundException("Пост с id = " + newUser.getId() + " не найден");
         }
 
-        User oldUser = users.get(newUser.getId());
-        oldUser = newUser;
+        users.replace(newUser.getId(), newUser);
         log.info("Пользователь обновлен", newUser.getId());
-        return oldUser;
+        return newUser;
     }
 
     private long getNextId() {
@@ -61,16 +60,6 @@ public class UserController {
                 .max()
                 .orElse(0);
         return ++currentMaxId;
-    }
-
-    private String validateWithCheckId(User user) {
-        log.info("Валидация доступности пользоватля с Id");
-        if (user.getId() == null) {
-            log.error("Пользователь с идентификатором %d не найден", user.getId());
-            return "Id не должен быть пустым";
-        }
-
-        return "";
     }
 
     public void validate(User user) {

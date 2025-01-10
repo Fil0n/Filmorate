@@ -22,19 +22,19 @@ class UserControllerTest {
 
     @Test
     void createUser() {
-        User newUser = controller.create(user);
-        Assert.assertEquals(user.getName(), newUser.getName(), "Имя не совпадает");
-        Assert.assertEquals(user.getLogin(), newUser.getLogin(), "Логин не совпадает");
-        Assert.assertEquals(user.getEmail(), newUser.getEmail(), "Почта не совпадает");
+        User expectedUser = controller.create(user);
+        Assert.assertEquals(user.getName(), expectedUser.getName(), "Имя не совпадает");
+        Assert.assertEquals(user.getLogin(), expectedUser.getLogin(), "Логин не совпадает");
+        Assert.assertEquals(user.getEmail(), expectedUser.getEmail(), "Почта не совпадает");
     }
 
     @Test
     void updateUser() {
         user.setName("userName");
-        User newUser = controller.update(user);
+        User expectedUser = controller.update(user);
 
-        Assert.assertEquals(user.getName(), newUser.getName(), "Имя не совпадает");
-        Assert.assertEquals(user.getLogin(), newUser.getLogin(), "Логин не совпадает");
-        Assert.assertEquals(user.getEmail(), newUser.getEmail(), "Почта не совпадает");
+        Assert.assertEquals(user.getName(), expectedUser.getName(), "Имя не совпадает");
+        Assert.assertEquals(user.getLogin(), expectedUser.getLogin(), "Логин не совпадает");
+        Assert.assertEquals(user.getEmail(), expectedUser.getEmail(), "Почта не совпадает");
     }
 }
