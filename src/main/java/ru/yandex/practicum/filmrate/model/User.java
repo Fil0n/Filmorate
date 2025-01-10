@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmrate.model;
 
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.PastOrPresent;
 import lombok.Data;
 import lombok.NonNull;
@@ -16,7 +17,7 @@ public class User {
     @NonNull
     private final String email;
 
-    @NonNull
+    @NotEmpty
     private final String login;
 
     private String name;

@@ -27,25 +27,29 @@ public class FilmController {
 
     @GetMapping
     public Collection<Film> findAll() {
+        log.info("Получаем список фильмов");
         return films.values();
     }
 
     @PostMapping
     public Film create(@Valid @RequestBody Film film) {
+        log.info("Добавляем фильм", film);
         validate(film);
         film.setId(getNextId());
         films.put(film.getId(), film);
+        log.info("Фильм добавлен", film);
         return film;
     }
 
     @PutMapping
     public Film update(@Valid @RequestBody Film newFilm) {
+        log.info("Обновляем фильм", newFilm);
         validate(newFilm);
 
         if (!films.containsKey(newFilm.getId())) {
             throw new NotFoundException("Пост с id = " + newFilm.getId() + " не найден");
         }
-
+        log.info("Фильм обновлен", newFilm);
         films.replace(newFilm.getId(), newFilm);
         return newFilm;
     }
@@ -62,7 +66,7 @@ public class FilmController {
     @SneakyThrows
     public void validate(Film film) {
         if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
-            log.warn("Дата выпуска меньше 1895.12.28 : {}", film.getReleaseDate());
+            log.error("Дата выпуска меньше 1895.12.28 : {}", film.getReleaseDate());
             throw new ConditionsNotMetException("Дата выпуска меньше 1895.12.28");
         }
     }

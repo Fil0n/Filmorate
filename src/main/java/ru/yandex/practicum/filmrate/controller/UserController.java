@@ -24,13 +24,13 @@ public class UserController {
 
     @GetMapping
     public Collection<User> findAll() {
-        log.info("Пытаемся получить список пользователей");
+        log.info("Получаем список пользователей");
         return users.values();
     }
 
     @PostMapping
     public User create(@Valid @RequestBody User user) {
-        log.info("Пытаемся добавить пользователя", user);
+        log.info("Добавляем пользователя", user);
         validate(user);
 
         user.setId(getNextId());
@@ -41,7 +41,7 @@ public class UserController {
 
     @PutMapping
     public User update(@Valid @RequestBody User newUser) {
-        log.info("Пытаемся обновить пользователя пользователя", newUser);
+        log.info("Начинаем обновление пользователя", newUser);
         validate(newUser);
 
         if (!users.containsKey(newUser.getId())) {
@@ -65,7 +65,7 @@ public class UserController {
     public void validate(User user) {
         log.info("User id = {}", user.getId());
         if (user.getName() == null || user.getName().isBlank()) {
-            log.info("Имя для отображения пустое — используем использован логин : {}", user.getLogin());
+            log.error("Имя для отображения пустое — используем использован логин : {}", user.getLogin());
             user.setName(user.getLogin());
         }
 
