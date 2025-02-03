@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.PastOrPresent;
 import lombok.Data;
 import lombok.NonNull;
+import ru.yandex.practicum.filmrate.validator.String.NoWhiteSpace;
 
 import java.time.LocalDate;
 
@@ -17,7 +18,7 @@ public class User {
     @NonNull
     private final String email;
 
-    @NotEmpty
+    @NoWhiteSpace
     private final String login;
 
     private String name;
