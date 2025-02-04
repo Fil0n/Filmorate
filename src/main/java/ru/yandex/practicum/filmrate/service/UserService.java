@@ -26,4 +26,20 @@ public class UserService {
     public User update(User user) {
         return userStorage.update(user);
     }
+
+    public void delete(Long userId) {
+        userStorage.delete(userId);
+    }
+
+    public User read(Long userId) {
+        return userStorage.read(userId);
+    }
+
+    public Collection<User> addFriend(User user, User friend) {
+        return userStorage.addFriend(user, friend);
+    }
+
+    public void removeFriend(User user, User friend) {
+        userStorage.removeFriend(user, friend);
+    }
 }

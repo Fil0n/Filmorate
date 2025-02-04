@@ -28,4 +28,16 @@ public class FilmService {
     public Film update(Film film) throws NotFoundException {
         return filmStorage.update(film);
     }
+
+    public void delete(Long filmId){
+        filmStorage.delete(filmId);
+    }
+
+    public Film read(Long filmId){
+        return filmStorage.read(filmId);
+    }
+
+    public Collection<Film> getMostPopular(Integer count){
+        return filmStorage.getMostPopular(count);
+    }
 }
