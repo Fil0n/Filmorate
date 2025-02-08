@@ -71,4 +71,19 @@ public class InMemoryUserStorage implements UserStorage {
         userFriends.remove(friend);
     }
 
+    @Override
+    public List<User> getFriends(User user) {
+        return new ArrayList<>(friends.get(user.getId()));
+    }
+
+    @Override
+    public List<User> getFriendsCommonOther(User user, User otherUser) {
+        final Set<User> userFriends = friends.get(user.getId());
+        final Set<User> otherUserFriends = friends.get(otherUser.getId());
+
+        return userFriends.stream()
+                .filter(otherUserFriends::contains)
+                .toList();
+    }
+
 }

@@ -17,7 +17,6 @@ class FilmControllerTest {
 
     @BeforeAll
     void init() {
-        controller = new FilmController();
         film = new Film("FilmName", LocalDate.of(2000, 1, 1));
     }
 

@@ -1,12 +1,17 @@
 package ru.yandex.practicum.filmrate.service;
 
+import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmrate.exeption.ExceptionMessages;
+import ru.yandex.practicum.filmrate.exeption.NotFoundException;
 import ru.yandex.practicum.filmrate.model.User;
 import ru.yandex.practicum.filmrate.storage.user.UserStorage;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -42,4 +47,37 @@ public class UserService {
     public void removeFriend(User user, User friend) {
         userStorage.removeFriend(user, friend);
     }
+
+    public List<User> getFriends(Long userId) {
+        User user = Optional.ofNullable(userStorage.read(userId))
+                .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.USER_NOT_FOUND_ERROR, userId)));
+        return userStorage.getFriends(user);
+    }
+
+    public List<User> getFriendsCommonOther(Long userId, Long otherUserId) {
+        User user = Optional.ofNullable(userStorage.read(userId))
+                .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.USER_NOT_FOUND_ERROR, userId)));
+        User otherUser = Optional.ofNullable(userStorage.read(otherUserId))
+                .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.USER_NOT_FOUND_ERROR, otherUserId)));
+        return userStorage.getFriendsCommonOther(user, otherUser);
+    }
+
+    public Collection<User> addFriend(Long userId, Long friendId) {
+        User user = Optional.ofNullable(userStorage.read(userId))
+                .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.USER_NOT_FOUND_ERROR, userId)));
+        User friend = Optional.ofNullable(userStorage.read(friendId))
+                .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.USER_NOT_FOUND_ERROR, friendId)));
+        if (user.equals(friend))
+            throw new ValidationException("Невозможно добавить в друзья самого себя");
+        return userStorage.addFriend(user, friend);
+    }
+
+    public void removeFriend(Long userId, Long friendId) {
+        User user = Optional.ofNullable(userStorage.read(userId))
+                .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.USER_NOT_FOUND_ERROR, userId)));
+        User friend = Optional.ofNullable(userStorage.read(friendId))
+                .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.USER_NOT_FOUND_ERROR, friendId)));
+        userStorage.removeFriend(user, friend);
+    }
+
 }

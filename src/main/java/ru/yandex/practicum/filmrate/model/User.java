@@ -2,7 +2,8 @@ package ru.yandex.practicum.filmrate.model;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.PastOrPresent;
+import jakarta.validation.constraints.Past;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 import ru.yandex.practicum.filmrate.validator.String.NoWhiteSpace;
@@ -10,6 +11,7 @@ import ru.yandex.practicum.filmrate.validator.String.NoWhiteSpace;
 import java.time.LocalDate;
 
 @Data
+@Builder(toBuilder = true)
 public class User {
 
     private Long id;
@@ -17,12 +19,12 @@ public class User {
     @Email(message = "Email не валиднен")
     @NonNull
     private final String email;
-
+    @NotEmpty
     @NoWhiteSpace
     private final String login;
 
     private String name;
 
-    @PastOrPresent(message = "Не может быть в будущем")
+    @Past(message = "Не может быть в будущем")
     private LocalDate birthday;
 }

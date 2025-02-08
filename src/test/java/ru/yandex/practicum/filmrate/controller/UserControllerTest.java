@@ -15,7 +15,6 @@ class UserControllerTest {
 
     @BeforeAll
     void init() {
-        controller = new UserController();
         User user = new User("test@test.ru", "login");
         user.setBirthday(LocalDate.of(2000, 1, 1));
     }

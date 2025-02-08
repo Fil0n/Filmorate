@@ -1,16 +1,16 @@
 package ru.yandex.practicum.filmrate.model;
 
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
+import lombok.Builder;
 import lombok.Data;
-import lombok.NonNull;
 import ru.yandex.practicum.filmrate.validator.Date.MinDate;
 
 import java.time.LocalDate;
 
 @Data
+@Builder(toBuilder = true)
 public class Film {
 
     private Long id;

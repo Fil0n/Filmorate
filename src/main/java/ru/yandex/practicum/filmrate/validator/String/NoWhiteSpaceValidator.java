@@ -6,6 +6,6 @@ import jakarta.validation.ConstraintValidatorContext;
 public class NoWhiteSpaceValidator implements ConstraintValidator<NoWhiteSpace, String> {
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
-        return value != null && !value.isBlank() && !value.contains(" ");
+        return value == null || !value.contains(" ");
     }
 }
