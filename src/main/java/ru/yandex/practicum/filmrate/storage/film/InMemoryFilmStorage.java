@@ -1,12 +1,16 @@
 package ru.yandex.practicum.filmrate.storage.film;
 
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmrate.Utils;
 import ru.yandex.practicum.filmrate.exeption.NotFoundException;
 import ru.yandex.practicum.filmrate.model.Film;
-import ru.yandex.practicum.filmrate.Utils;
 import ru.yandex.practicum.filmrate.model.User;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -29,7 +33,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film update(Film newFilm) {
+    public Film update(Film newFilm) throws NotFoundException {
         if (!films.containsKey(newFilm.getId())) {
             throw new NotFoundException("Пост с id = " + newFilm.getId() + " не найден");
         }
@@ -43,12 +47,12 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film read(Long filmId){
+    public Film read(Long filmId) {
         return films.get(filmId);
     }
 
     @Override
-    public Collection<Film> getMostPopular(Integer count){
+    public Collection<Film> getMostPopular(Integer count) {
         return films.values()
                 .stream()
                 .sorted((film1, film2) -> {

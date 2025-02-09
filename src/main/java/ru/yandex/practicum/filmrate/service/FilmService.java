@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmrate.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmrate.exeption.ExceptionMessages;
 import ru.yandex.practicum.filmrate.exeption.NotFoundException;
@@ -17,7 +18,9 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class FilmService {
+    @Autowired
     private FilmStorage filmStorage;
+    @Autowired
     private UserStorage userStorage;
 
     public Collection<Film> findAll() {
@@ -32,15 +35,15 @@ public class FilmService {
         return filmStorage.update(film);
     }
 
-    public void delete(Long filmId){
+    public void delete(Long filmId) {
         filmStorage.delete(filmId);
     }
 
-    public Film read(Long filmId){
+    public Film read(Long filmId) {
         return filmStorage.read(filmId);
     }
 
-    public Collection<Film> getMostPopular(Integer count){
+    public Collection<Film> getMostPopular(Integer count) {
         return filmStorage.getMostPopular(count);
     }
 

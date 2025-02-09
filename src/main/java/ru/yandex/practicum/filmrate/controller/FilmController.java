@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmrate.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -10,6 +11,7 @@ import ru.yandex.practicum.filmrate.service.FilmService;
 
 import java.util.Collection;
 
+@Slf4j
 @RestController
 @RequestMapping("/films")
 @RequiredArgsConstructor
@@ -53,6 +55,15 @@ public class FilmController {
     public void addLike(@PathVariable("id") Long filmId,
                         @PathVariable("userId") Long userId) {
         filmService.addLike(filmId, userId);
+    }
+
+    @DeleteMapping("/{id}/like/{userId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void removeLike(@PathVariable("id") Long filmId,
+                           @PathVariable("userId") Long userId) {
+        log.info("Вызван метод DELETE /films/{id}/like/{userId} с id = {} и userId = {}", filmId, userId);
+        filmService.removeLike(filmId, userId);
+        log.info("Метод DELETE /films/{id}/like/{userId} успешно выполнен");
     }
 
 }

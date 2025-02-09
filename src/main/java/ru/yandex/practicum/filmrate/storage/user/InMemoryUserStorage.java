@@ -1,13 +1,24 @@
 package ru.yandex.practicum.filmrate.storage.user;
 
+import jakarta.validation.ValidationException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmrate.exeption.NotFoundException;
-import ru.yandex.practicum.filmrate.model.User;
 import ru.yandex.practicum.filmrate.Utils;
+import ru.yandex.practicum.filmrate.exeption.NotFoundException;
+import ru.yandex.practicum.filmrate.exeption.ExceptionMessages;
+import ru.yandex.practicum.filmrate.model.User;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 public class InMemoryUserStorage implements UserStorage {
 
@@ -21,6 +32,17 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User create(User user) {
+
+        if (users.values().stream().anyMatch(u -> u.getEmail().equals(user.getEmail()))) {
+            log.error("Адрес электронной почты {} уже используется", user.getEmail());
+            throw new ValidationException("Этот адрес электронной почты уже используется");
+        }
+
+        if (user.getName() == null || user.getName().isBlank()) {
+            log.warn("Имя пользователя не указано, используется логин ({}) в качестве имени", user.getLogin());
+            user.setName(user.getLogin());
+        }
+
         user.setId(Utils.getNextId(users));
         users.put(user.getId(), user);
         friends.put(user.getId(), new HashSet<>());
@@ -28,26 +50,37 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User update(User newUser) throws NotFoundException {
-        if (!users.containsKey(newUser.getId())) {
-            throw new NotFoundException("Пост с id = " + newUser.getId() + " не найден");
+    public User update(User user) throws NotFoundException {
+        if (!users.containsKey(user.getId())) {
+            throw new NotFoundException(String.format(ExceptionMessages.USER_NOT_FOUND_ERROR, user.getId()));
         }
 
-        users.replace(newUser.getId(), newUser);
-        return newUser;
+        if (users.values().stream()
+                .anyMatch(u -> !Objects.equals(u.getId(), user.getId()) && u.getEmail().equals(user.getEmail()))) {
+            log.error("Адрес электронной почты {} уже используется", user.getEmail());
+            throw new ValidationException("Этот адрес электронной почты уже используется");
+        }
+
+        if (user.getName() == null || user.getName().isBlank()) {
+            log.warn("Имя пользователя не указано, используется логин ({}) в качестве имени", user.getLogin());
+            user.setName(user.getLogin());
+        }
+
+        users.replace(user.getId(), user);
+        return user;
     }
 
     @Override
     public void delete(Long userId) {
         User user = users.get(userId);
-        for(User friend : friends.get(userId)){
+        for (User friend : friends.get(userId)) {
             removeFriend(user, friend);
         }
         users.remove(userId);
     }
 
     @Override
-    public User read(Long userId){
+    public User read(Long userId) {
         return users.get(userId);
     }
 

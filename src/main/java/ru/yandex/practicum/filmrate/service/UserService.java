@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmrate.service;
 import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmrate.exeption.ExceptionMessages;
 import ru.yandex.practicum.filmrate.exeption.NotFoundException;
@@ -17,7 +18,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class UserService {
-
+    @Autowired
     private UserStorage userStorage;
 
     public Collection<User> findAll() {
