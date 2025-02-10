@@ -4,8 +4,8 @@ import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmrate.Utils;
-import ru.yandex.practicum.filmrate.exeption.NotFoundException;
-import ru.yandex.practicum.filmrate.exeption.ExceptionMessages;
+import ru.yandex.practicum.filmrate.exception.NotFoundException;
+import ru.yandex.practicum.filmrate.exception.ExceptionMessages;
 import ru.yandex.practicum.filmrate.model.User;
 
 import java.util.ArrayList;

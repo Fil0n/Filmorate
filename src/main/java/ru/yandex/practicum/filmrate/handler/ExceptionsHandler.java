@@ -10,7 +10,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import ru.yandex.practicum.filmrate.exeption.NotFoundException;
+import ru.yandex.practicum.filmrate.exception.NotFoundException;
 
 import java.util.ArrayList;
 import java.util.List;

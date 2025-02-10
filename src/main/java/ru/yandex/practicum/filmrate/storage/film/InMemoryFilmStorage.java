@@ -2,7 +2,7 @@ package ru.yandex.practicum.filmrate.storage.film;
 
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmrate.Utils;
-import ru.yandex.practicum.filmrate.exeption.NotFoundException;
+import ru.yandex.practicum.filmrate.exception.NotFoundException;
 import ru.yandex.practicum.filmrate.model.Film;
 import ru.yandex.practicum.filmrate.model.User;
 

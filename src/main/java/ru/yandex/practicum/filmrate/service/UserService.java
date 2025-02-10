@@ -5,8 +5,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmrate.exeption.ExceptionMessages;
-import ru.yandex.practicum.filmrate.exeption.NotFoundException;
+import ru.yandex.practicum.filmrate.exception.ExceptionMessages;
+import ru.yandex.practicum.filmrate.exception.NotFoundException;
 import ru.yandex.practicum.filmrate.model.User;
 import ru.yandex.practicum.filmrate.storage.user.UserStorage;
 
