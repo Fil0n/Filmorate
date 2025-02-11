@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Past;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
-import ru.yandex.practicum.filmrate.validator.String.NoWhiteSpace;
+import ru.yandex.practicum.filmrate.validator.string.NoWhiteSpace;
 
 import java.time.LocalDate;
 

@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmrate.validator.Date;
+package ru.yandex.practicum.filmrate.validator.date;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.constraints.Past;

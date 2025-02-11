@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmrate.validator.String;
+package ru.yandex.practicum.filmrate.validator.string;
 
 import jakarta.validation.Constraint;
 

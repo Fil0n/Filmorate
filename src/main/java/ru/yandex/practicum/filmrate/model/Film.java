@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Data;
-import ru.yandex.practicum.filmrate.validator.Date.MinDate;
+import ru.yandex.practicum.filmrate.validator.date.MinDate;
 
 import java.time.LocalDate;
 
