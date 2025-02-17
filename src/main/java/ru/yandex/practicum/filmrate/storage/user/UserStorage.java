@@ -2,12 +2,13 @@ package ru.yandex.practicum.filmrate.storage.user;
 
 import ru.yandex.practicum.filmrate.model.User;
 
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 
 public interface UserStorage {
 
-    Collection<User> findAll();
+    Collection<User> findAll() throws SQLException;
 
     User create(User user);
 
@@ -15,13 +16,13 @@ public interface UserStorage {
 
     void delete(Long userId);
 
-    User read(Long userId);
+    User read(Long userId) throws SQLException;
 
-    Collection<User> addFriend(User user, User friend);
+    void addFriend(User user, User friend);
 
     void removeFriend(User user, User friend);
 
-    List<User> getFriends(User user);
+    List<User> getFriends(User user) throws SQLException;
 
     List<User> getFriendsCommonOther(User user, User otherUser);
 }

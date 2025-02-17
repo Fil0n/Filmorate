@@ -8,6 +8,7 @@ import lombok.Data;
 import ru.yandex.practicum.filmrate.validator.date.MinDate;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @Builder(toBuilder = true)
@@ -27,4 +28,8 @@ public class Film {
 
     @Min(value = 1, message = "Не может быть меньше 1")
     private int duration;
+
+    private Integer rating;
+
+    private List<Integer> genres;
 }

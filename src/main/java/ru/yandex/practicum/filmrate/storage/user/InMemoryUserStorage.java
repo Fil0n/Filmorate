@@ -85,14 +85,14 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public Collection<User> addFriend(User user, User friend) {
+    public void addFriend(User user, User friend) {
         Set<User> userFriends = friends.get(friend.getId());
         userFriends.add(user);
 
         userFriends = friends.get(user.getId());
         userFriends.add(friend);
 
-        return userFriends.stream().collect(Collectors.toList());
+        //return userFriends.stream().collect(Collectors.toList());
     }
 
     @Override
