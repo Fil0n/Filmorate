@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmrate.exeption;
+package ru.yandex.practicum.filmrate.exception;
 
 public class NotFoundException extends RuntimeException {
     public NotFoundException(String message) {
