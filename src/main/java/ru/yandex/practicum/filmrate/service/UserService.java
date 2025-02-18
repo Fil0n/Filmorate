@@ -55,14 +55,14 @@ public class UserService {
         return userStorage.getFriendsCommonOther(user, otherUser);
     }
 
-    public Collection<User> addFriend(Long userId, Long friendId) {
+    public void addFriend(Long userId, Long friendId) {
         User user = Optional.ofNullable(userStorage.read(userId))
                 .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.USER_NOT_FOUND_ERROR, userId)));
         User friend = Optional.ofNullable(userStorage.read(friendId))
                 .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.USER_NOT_FOUND_ERROR, friendId)));
         if (user.equals(friend))
             throw new ValidationException("Невозможно добавить в друзья самого себя");
-        return userStorage.addFriend(user, friend);
+        userStorage.addFriend(user, friend);
     }
 
     public void removeFriend(Long userId, Long friendId) {

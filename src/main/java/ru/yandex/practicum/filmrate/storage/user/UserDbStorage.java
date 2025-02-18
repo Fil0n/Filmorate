@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmrate.storage.user;
 
+import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
@@ -7,10 +8,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmrate.exception.ExceptionMessages;
+import ru.yandex.practicum.filmrate.exception.NotFoundException;
 import ru.yandex.practicum.filmrate.model.User;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -22,12 +23,12 @@ public class UserDbStorage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public Collection<User> findAll() throws SQLException {
+    public Collection<User> findAll() {
         List<User> users = new ArrayList<>();
-        SqlRowSet filmsSet = jdbcTemplate.queryForRowSet("select * from film");
+        SqlRowSet filmsSet = jdbcTemplate.queryForRowSet("select * from users");
 
         while (filmsSet.next()) {
-            users.add(rowToUser((ResultSet) filmsSet));
+            users.add(mapRowSetToUser(filmsSet));
         }
 
         return users.stream().collect(Collectors.toList());
@@ -35,8 +36,9 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User create(User user) {
+        isMatch(user);
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
-                .withTableName("user")
+                .withTableName("users")
                 .usingGeneratedKeyColumns("id");
         user.setId((long) simpleJdbcInsert.executeAndReturnKey(toMap(user)).intValue());
         return user;
@@ -44,10 +46,13 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User update(User newUser) {
-        String query = "update user set " +
+        read(newUser.getId());
+        isMatch(newUser);
+
+        String query = "update users set " +
                 "email = ?, login = ?, name = ?, birthday = ? " +
                 "where id = ?";
-        int rowsCount = jdbcTemplate.update(query, newUser.getEmail(), newUser.getLogin(),
+        jdbcTemplate.update(query, newUser.getEmail(), newUser.getLogin(),
                 newUser.getName(), newUser.getBirthday(), newUser.getId());
         return newUser;
     }
@@ -55,7 +60,7 @@ public class UserDbStorage implements UserStorage {
     @Override
     public void delete(Long userId) {
         removeAllFriends(userId);
-        String query = "delete from user where id = ?";
+        String query = "delete from users where id = ?";
         jdbcTemplate.update(query, userId);
     }
 
@@ -65,9 +70,30 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public User read(Long userId) throws SQLException {
-        String query = "select * from user where id = ?";
-        return rowToUser(jdbcTemplate.queryForObject(query, ResultSet.class, userId));
+    public User read(Long userId) {
+        String query = "select * from users where id = ?";
+        SqlRowSet filmsSet = jdbcTemplate.queryForRowSet(query, userId);
+
+        while (filmsSet.next()) {
+            return mapRowSetToUser(filmsSet);
+        }
+
+        throw new NotFoundException(String.format(ExceptionMessages.USER_NOT_FOUND_ERROR, userId));
+    }
+
+    public void isMatch(User user) {
+        String query = "select * from users where email = ?";
+        SqlRowSet filmsSet;
+        if (user.getId() == null) {
+            filmsSet = jdbcTemplate.queryForRowSet(query, user.getEmail());
+        } else {
+            query += " and id != ?";
+            filmsSet = jdbcTemplate.queryForRowSet(query, user.getEmail(), user.getId());
+        }
+
+        while (filmsSet.next()) {
+            throw new ValidationException("Этот адрес электронной почты уже используется");
+        }
     }
 
     @Override
@@ -78,17 +104,18 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void removeFriend(User user, User friend) {
-        String query = "delete from friendship where user_id = ?, friend_id = ?";
+        String query = "delete from friendship where user_id = ? and friend_id = ?";
         jdbcTemplate.update(query, user.getId(), friend.getId());
     }
 
     @Override
-    public List<User> getFriends(User user) throws SQLException {
+    public List<User> getFriends(User user) {
         List<User> users = new ArrayList<>();
-        String query = "select * from user where id in(select friend_id from friendship f where f.user_id = ?)";
-        SqlRowSet filmsSet = jdbcTemplate.queryForRowSet(query);
-        while (filmsSet.next()) {
-            users.add(rowToUser((ResultSet) filmsSet));
+        String query = "select * from users where id in (select friend_id from friendship f where f.user_id = ?)";
+        SqlRowSet usersSet = jdbcTemplate.queryForRowSet(query, user.getId());
+
+        while (usersSet.next()) {
+            users.add(mapRowSetToUser(usersSet));
         }
 
         return users;
@@ -96,16 +123,24 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<User> getFriendsCommonOther(User user, User otherUser) {
-        return null;
+        List<User> users = new ArrayList<>();
+        String query = "select * from users where id in (select friend_id from friendship f where f.user_id = ?) and id in(select friend_id from friendship f where f.user_id = ?)";
+        SqlRowSet usersSet = jdbcTemplate.queryForRowSet(query, user.getId(), otherUser.getId());
+
+        while (usersSet.next()) {
+            users.add(mapRowSetToUser(usersSet));
+        }
+
+        return users;
     }
 
-    private User rowToUser(ResultSet resultSet) throws SQLException {
+    public User mapRowSetToUser(SqlRowSet rowSet) {
         return User.builder()
-                .id(resultSet.getLong("id"))
-                .email(resultSet.getString("email"))
-                .login(resultSet.getString("login"))
-                .name(resultSet.getString("name"))
-                .birthday(resultSet.getDate("birthday").toLocalDate())
+                .id(rowSet.getLong("id"))
+                .email(rowSet.getString("email"))
+                .login(rowSet.getString("login"))
+                .name(rowSet.getString("name"))
+                .birthday(rowSet.getDate("birthday").toLocalDate())
                 .build();
     }
 

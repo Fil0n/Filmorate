@@ -2,13 +2,11 @@ package ru.yandex.practicum.filmrate.storage.film;
 
 import ru.yandex.practicum.filmrate.model.Film;
 import ru.yandex.practicum.filmrate.model.User;
-
-import java.sql.SQLException;
 import java.util.Collection;
 
 public interface FilmStorage {
 
-    Collection<Film> findAll() throws SQLException;
+    Collection<Film> findAll();
 
     Film create(Film film);
 
@@ -16,9 +14,9 @@ public interface FilmStorage {
 
     void delete(Long filmId);
 
-    Film read(Long filmId) throws SQLException;
+    Film read(Long filmId);
 
-    Collection<Film> getMostPopular(Integer count) throws SQLException;
+    Collection<Film> getMostPopular(Integer count);
 
     void addLike(Film film, User user);
 
