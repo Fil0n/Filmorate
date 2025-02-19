@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class Rating {
+public class MPA {
     @NotNull
     private Integer id;
     @NotNull

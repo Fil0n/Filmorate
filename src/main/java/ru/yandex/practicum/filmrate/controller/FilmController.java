@@ -71,4 +71,11 @@ public class FilmController {
         filmService.removeLike(filmId, userId);
     }
 
+    @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public Film read(@PathVariable("id") long id) {
+        log.info("Получен запрос на получение фильма с идентификатором: {}", id);
+        return filmService.read(id);
+    }
+
 }

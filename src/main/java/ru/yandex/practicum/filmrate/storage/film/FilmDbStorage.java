@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmrate.storage.film;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
@@ -10,7 +11,10 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmrate.exception.ExceptionMessages;
 import ru.yandex.practicum.filmrate.exception.NotFoundException;
 import ru.yandex.practicum.filmrate.model.Film;
+import ru.yandex.practicum.filmrate.model.Genre;
 import ru.yandex.practicum.filmrate.model.User;
+import ru.yandex.practicum.filmrate.service.GenreSevice;
+import ru.yandex.practicum.filmrate.service.MPAService;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -21,6 +25,11 @@ import java.util.stream.Collectors;
 @Component
 public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private GenreSevice genreSevice;
+    @Autowired
+    private MPAService mpaService;
 
     @Override
     public Collection<Film> findAll() {
@@ -36,6 +45,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film create(Film film) {
+        mpaService.read(film.getMpa().getId());
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("film")
                 .usingGeneratedKeyColumns("id");
@@ -43,6 +53,7 @@ public class FilmDbStorage implements FilmStorage {
         updateFilmGenre(film);
         return film;
     }
+
 
     public void updateFilmGenre(Film film) {
         deleteFilmGenre(film.getId());
@@ -52,8 +63,11 @@ public class FilmDbStorage implements FilmStorage {
         }
 
         String query = "insert into film_genre(film_id, genre_id) values (?, ?)";
-        film.getGenres().forEach(g -> {
-            jdbcTemplate.update(query, film.getId(), g);
+        Set<Genre> genres = film.getGenres();
+        genres.forEach(g -> {
+            int id = g.getId();
+            genreSevice.read(id);
+            jdbcTemplate.update(query, film.getId(), id);
         });
     }
 
@@ -67,12 +81,11 @@ public class FilmDbStorage implements FilmStorage {
     public Film update(Film newFilm) {
         read(newFilm.getId());
 
-        newFilm.setRating(1);
         String query = "update film set " +
-                "name = ?, description = ?, release_date = ?, duration = ?, rating = ? " +
+                "name = ?, description = ?, release_date = ?, duration = ?, mpa = ? " +
                 "where id = ?";
         int rowsCount = jdbcTemplate.update(query, newFilm.getName(), newFilm.getDescription(),
-                newFilm.getReleaseDate(), newFilm.getDuration(), newFilm.getRating(), newFilm.getId());
+                newFilm.getReleaseDate(), newFilm.getDuration(), newFilm.getMpa().getId(), newFilm.getId());
         updateFilmGenre(newFilm);
         return newFilm;
     }
@@ -90,7 +103,9 @@ public class FilmDbStorage implements FilmStorage {
         SqlRowSet filmsSet = jdbcTemplate.queryForRowSet(query, filmId);
 
         while (filmsSet.next()) {
-            return mapRowSetToFilm(filmsSet);
+            Film film = mapRowSetToFilm(filmsSet);
+            film.setGenres(genreSevice.getGenresByFilmId(filmId));
+            return film;
         }
 
         throw new NotFoundException(String.format(ExceptionMessages.FILM_NOT_FOUND_ERROR, filmId));
@@ -132,7 +147,7 @@ public class FilmDbStorage implements FilmStorage {
         return Film.builder()
                 .id(rowSet.getLong("id"))
                 .name(rowSet.getString("name"))
-                .rating(rowSet.getInt("rating"))
+                .mpa(mpaService.read(rowSet.getInt("mpa")))
                 .description(rowSet.getString("description"))
                 .releaseDate(rowSet.getDate("release_date").toLocalDate())
                 .duration(rowSet.getInt("duration"))
@@ -145,7 +160,7 @@ public class FilmDbStorage implements FilmStorage {
         values.put("description", film.getDescription());
         values.put("release_date", film.getReleaseDate());
         values.put("duration", film.getDuration());
-        values.put("rating", 1); //film.getRating()
+        values.put("mpa", film.getMpa().getId());
         return values;
     }
 }
