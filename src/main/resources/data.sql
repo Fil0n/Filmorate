@@ -1,4 +1,4 @@
-merge into rating
+merge into mpa
   (id, name)
 values (1, 'G'),
   (2, 'PG'),

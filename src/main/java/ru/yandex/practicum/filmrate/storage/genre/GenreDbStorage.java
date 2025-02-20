@@ -10,7 +10,10 @@ import ru.yandex.practicum.filmrate.exception.ExceptionMessages;
 import ru.yandex.practicum.filmrate.exception.NotFoundException;
 import ru.yandex.practicum.filmrate.model.Genre;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Primary
@@ -20,10 +23,16 @@ import java.util.stream.Collectors;
 public class GenreDbStorage implements GenreStorage {
     private final JdbcTemplate jdbcTemplate;
 
+    public Collection<Genre> genres;
+
     @Override
     public Collection<Genre> findAll() {
-        List<Genre> genres = new ArrayList<>();
-        SqlRowSet genresSet = jdbcTemplate.queryForRowSet("select * from genre");
+        if (genres != null) {
+            return genres;
+        }
+
+        genres = new ArrayList<>();
+        SqlRowSet genresSet = jdbcTemplate.queryForRowSet("select id, name from genre");
 
         while (genresSet.next()) {
             genres.add(mapRowSetToGenre(genresSet));
@@ -34,7 +43,7 @@ public class GenreDbStorage implements GenreStorage {
 
     @Override
     public Genre read(int id) {
-        String query = "select * from genre where id = ?";
+        String query = "select id, name from genre where id = ?";
         SqlRowSet genresSet = jdbcTemplate.queryForRowSet(query, id);
 
         while (genresSet.next()) {
@@ -46,7 +55,7 @@ public class GenreDbStorage implements GenreStorage {
 
     public Set<Genre> getGenresByFilmId(Long id) {
         Set<Genre> genres = new HashSet<>();
-        String query = "select * from genre where id in (select genre_id from film_genre where film_id = ?)";
+        String query = "select id, name from genre where id in (select genre_id from film_genre where film_id = ?)";
         SqlRowSet genresSet = jdbcTemplate.queryForRowSet(query, id);
 
         while (genresSet.next()) {

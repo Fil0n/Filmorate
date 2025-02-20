@@ -60,8 +60,9 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.USER_NOT_FOUND_ERROR, userId)));
         User friend = Optional.ofNullable(userStorage.read(friendId))
                 .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.USER_NOT_FOUND_ERROR, friendId)));
-        if (user.equals(friend))
+        if (user.equals(friend)) {
             throw new ValidationException("Невозможно добавить в друзья самого себя");
+        }
         userStorage.addFriend(user, friend);
     }
 

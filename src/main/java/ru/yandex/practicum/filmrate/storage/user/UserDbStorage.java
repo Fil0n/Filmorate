@@ -12,7 +12,11 @@ import ru.yandex.practicum.filmrate.exception.ExceptionMessages;
 import ru.yandex.practicum.filmrate.exception.NotFoundException;
 import ru.yandex.practicum.filmrate.model.User;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Primary
@@ -25,7 +29,7 @@ public class UserDbStorage implements UserStorage {
     @Override
     public Collection<User> findAll() {
         List<User> users = new ArrayList<>();
-        SqlRowSet filmsSet = jdbcTemplate.queryForRowSet("select * from users");
+        SqlRowSet filmsSet = jdbcTemplate.queryForRowSet("select id, email, login, name, birthday from users");
 
         while (filmsSet.next()) {
             users.add(mapRowSetToUser(filmsSet));
@@ -71,7 +75,7 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User read(Long userId) {
-        String query = "select * from users where id = ?";
+        String query = "select id, email, login, name, birthday from users where id = ?";
         SqlRowSet filmsSet = jdbcTemplate.queryForRowSet(query, userId);
 
         while (filmsSet.next()) {
@@ -82,7 +86,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     public void isMatch(User user) {
-        String query = "select * from users where email = ?";
+        String query = "select id, email, login, name, birthday from users where email = ?";
         SqlRowSet filmsSet;
         if (user.getId() == null) {
             filmsSet = jdbcTemplate.queryForRowSet(query, user.getEmail());
@@ -111,7 +115,7 @@ public class UserDbStorage implements UserStorage {
     @Override
     public List<User> getFriends(User user) {
         List<User> users = new ArrayList<>();
-        String query = "select * from users where id in (select friend_id from friendship f where f.user_id = ?)";
+        String query = "select id, email, login, name, birthday from users where id in (select friend_id from friendship f where f.user_id = ?)";
         SqlRowSet usersSet = jdbcTemplate.queryForRowSet(query, user.getId());
 
         while (usersSet.next()) {
@@ -124,7 +128,7 @@ public class UserDbStorage implements UserStorage {
     @Override
     public List<User> getFriendsCommonOther(User user, User otherUser) {
         List<User> users = new ArrayList<>();
-        String query = "select * from users where id in (select friend_id from friendship f where f.user_id = ?) and id in(select friend_id from friendship f where f.user_id = ?)";
+        String query = "select id, email, login, name, birthday from users where id in (select friend_id from friendship f where f.user_id = ?) and id in(select friend_id from friendship f where f.user_id = ?)";
         SqlRowSet usersSet = jdbcTemplate.queryForRowSet(query, user.getId(), otherUser.getId());
 
         while (usersSet.next()) {

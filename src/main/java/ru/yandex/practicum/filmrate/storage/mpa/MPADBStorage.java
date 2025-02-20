@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmrate.storage.MPA;
+package ru.yandex.practicum.filmrate.storage.mpa;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,11 +21,15 @@ import java.util.stream.Collectors;
 @Component
 public class MPADBStorage implements MPAStorage {
     private final JdbcTemplate jdbcTemplate;
+    private Collection<MPA> mpas;
 
     @Override
     public Collection<MPA> findAll() {
+        if (mpas != null) {
+            return mpas;
+        }
         List<MPA> mpas = new ArrayList<>();
-        SqlRowSet ratingsSet = jdbcTemplate.queryForRowSet("select * from mpa");
+        SqlRowSet ratingsSet = jdbcTemplate.queryForRowSet("select id, name from mpa");
 
         while (ratingsSet.next()) {
             mpas.add(mapRowSetToRating(ratingsSet));
@@ -36,7 +40,7 @@ public class MPADBStorage implements MPAStorage {
 
     @Override
     public MPA read(int id) {
-        String query = "select * from mpa where id = ?";
+        String query = "select id, name from mpa where id = ?";
         SqlRowSet ratingSet = jdbcTemplate.queryForRowSet(query, id);
 
         while (ratingSet.next()) {

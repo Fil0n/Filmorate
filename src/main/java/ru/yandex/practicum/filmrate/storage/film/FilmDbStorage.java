@@ -12,12 +12,16 @@ import ru.yandex.practicum.filmrate.exception.ExceptionMessages;
 import ru.yandex.practicum.filmrate.exception.NotFoundException;
 import ru.yandex.practicum.filmrate.model.Film;
 import ru.yandex.practicum.filmrate.model.Genre;
+import ru.yandex.practicum.filmrate.model.MPA;
 import ru.yandex.practicum.filmrate.model.User;
-import ru.yandex.practicum.filmrate.service.GenreSevice;
 import ru.yandex.practicum.filmrate.service.MPAService;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Primary
 @Slf4j
@@ -27,25 +31,22 @@ public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
-    private GenreSevice genreSevice;
-    @Autowired
     private MPAService mpaService;
 
     @Override
     public Collection<Film> findAll() {
         List<Film> films = new ArrayList<>();
-        SqlRowSet filmsSet = jdbcTemplate.queryForRowSet("select * from film");
+        SqlRowSet filmsSet = jdbcTemplate.queryForRowSet("select id, name, description, release_date, mpa, duration from film");
 
         while (filmsSet.next()) {
             films.add(mapRowSetToFilm(filmsSet));
         }
 
-        return films.stream().collect(Collectors.toList());
+        return films;
     }
 
     @Override
     public Film create(Film film) {
-        mpaService.read(film.getMpa().getId());
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("film")
                 .usingGeneratedKeyColumns("id");
@@ -54,21 +55,30 @@ public class FilmDbStorage implements FilmStorage {
         return film;
     }
 
-
     public void updateFilmGenre(Film film) {
         deleteFilmGenre(film.getId());
+        Set<Genre> genres = film.getGenres();
 
-        if (film.getGenres() == null) {
+        if (genres == null) {
             return;
         }
 
-        String query = "insert into film_genre(film_id, genre_id) values (?, ?)";
-        Set<Genre> genres = film.getGenres();
-        genres.forEach(g -> {
-            int id = g.getId();
-            genreSevice.read(id);
-            jdbcTemplate.update(query, film.getId(), id);
-        });
+        StringBuilder query = new StringBuilder("insert into film_genre(film_id, genre_id) values ");
+
+        List<Object> params = new ArrayList<>();
+        int i = 0;
+        for (Genre genre : genres) {
+            if (i == 0) {
+                query.append("(?, ?)");
+            } else {
+                query.append(", (?, ?)");
+            }
+
+            params.add(film.getId());
+            params.add(genre.getId());
+            i++;
+        }
+        jdbcTemplate.update(query.toString(), params.toArray());
     }
 
     public void deleteFilmGenre(Long filmId) {
@@ -84,9 +94,12 @@ public class FilmDbStorage implements FilmStorage {
         String query = "update film set " +
                 "name = ?, description = ?, release_date = ?, duration = ?, mpa = ? " +
                 "where id = ?";
-        int rowsCount = jdbcTemplate.update(query, newFilm.getName(), newFilm.getDescription(),
-                newFilm.getReleaseDate(), newFilm.getDuration(), newFilm.getMpa().getId(), newFilm.getId());
-        updateFilmGenre(newFilm);
+
+        if (jdbcTemplate.update(query, newFilm.getName(), newFilm.getDescription(),
+                newFilm.getReleaseDate(), newFilm.getDuration(), newFilm.getMpa().getId(), newFilm.getId()) > 0) {
+            updateFilmGenre(newFilm);
+        }
+
         return newFilm;
     }
 
@@ -99,13 +112,11 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film read(Long filmId) {
-        String query = "select * from film where id = ?";
+        String query = "select id, name, description, release_date, mpa, duration from film where id = ?";
         SqlRowSet filmsSet = jdbcTemplate.queryForRowSet(query, filmId);
 
         while (filmsSet.next()) {
-            Film film = mapRowSetToFilm(filmsSet);
-            film.setGenres(genreSevice.getGenresByFilmId(filmId));
-            return film;
+            return mapRowSetToFilm(filmsSet);
         }
 
         throw new NotFoundException(String.format(ExceptionMessages.FILM_NOT_FOUND_ERROR, filmId));
@@ -117,7 +128,7 @@ public class FilmDbStorage implements FilmStorage {
         String query = "with l as (select l.film_id, count(l.film_id) likes from film f " +
                 "join likes l on f.id = l.film_id " +
                 "group by film_id) " +
-                "select * from film f " +
+                "select id, name, description, release_date, mpa, duration from film f " +
                 "join l on f.id = l.film_id " +
                 "order by l.likes desc " +
                 "limit ?";
@@ -128,7 +139,7 @@ public class FilmDbStorage implements FilmStorage {
             films.add(mapRowSetToFilm(filmsSet));
         }
 
-        return films.stream().collect(Collectors.toList());
+        return films;
     }
 
     @Override
@@ -144,13 +155,18 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     public Film mapRowSetToFilm(SqlRowSet rowSet) {
+        MPA mpa = mpaService.findAll().stream()
+                .filter(m -> m.getId() == rowSet.getInt("mpa"))
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.MPA_NOT_FOUND_ERROR, rowSet.getInt("mpa"))));
+
         return Film.builder()
                 .id(rowSet.getLong("id"))
                 .name(rowSet.getString("name"))
-                .mpa(mpaService.read(rowSet.getInt("mpa")))
                 .description(rowSet.getString("description"))
-                .releaseDate(rowSet.getDate("release_date").toLocalDate())
+                .releaseDate(rowSet.getDate("release_date") == null ? null : rowSet.getDate("release_date").toLocalDate())
                 .duration(rowSet.getInt("duration"))
+                .mpa(mpa)
                 .build();
     }
 
