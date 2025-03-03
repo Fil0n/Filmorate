@@ -7,7 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmrate.exception.ExceptionMessages;
 import ru.yandex.practicum.filmrate.exception.NotFoundException;
+import ru.yandex.practicum.filmrate.model.EventType;
+import ru.yandex.practicum.filmrate.model.Feed;
+import ru.yandex.practicum.filmrate.model.Operation;
 import ru.yandex.practicum.filmrate.model.User;
+import ru.yandex.practicum.filmrate.storage.feed.FeedStorage;
 import ru.yandex.practicum.filmrate.storage.user.UserStorage;
 
 import java.util.Collection;
@@ -20,6 +24,9 @@ import java.util.Optional;
 public class UserService {
     @Autowired
     private UserStorage userStorage;
+
+    @Autowired
+    private FeedService feedService;
 
     public Collection<User> findAll() {
         return userStorage.findAll();
@@ -64,6 +71,7 @@ public class UserService {
             throw new ValidationException("Невозможно добавить в друзья самого себя");
         }
         userStorage.addFriend(user, friend);
+        feedService.create(EventType.FRIEND, Operation.ADD, userId, friendId);
     }
 
     public void removeFriend(Long userId, Long friendId) {
@@ -72,6 +80,12 @@ public class UserService {
         User friend = Optional.ofNullable(userStorage.read(friendId))
                 .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.USER_NOT_FOUND_ERROR, friendId)));
         userStorage.removeFriend(user, friend);
+        feedService.create(EventType.FRIEND, Operation.REMOVE, userId, friendId);
+    }
+
+    public List<Feed> getFeed(long id) {
+        log.info("Получен запрос получение ленты событий для пользователя: {}", id);
+        return feedService.getFeed(id);
     }
 
 }

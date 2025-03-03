@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import ru.yandex.practicum.filmrate.model.Feed;
 import ru.yandex.practicum.filmrate.model.User;
 import ru.yandex.practicum.filmrate.service.UserService;
 
@@ -92,5 +93,12 @@ public class UserController {
     public void removeFriend(@PathVariable("id") Long userId,
                              @PathVariable("friendId") Long friendId) {
         userService.removeFriend(userId, friendId);
+    }
+
+    @GetMapping("/{id}/feed")
+    @ResponseStatus(HttpStatus.OK)
+    public List<Feed> feed(long id) {
+        log.info("Получен запрос получение ленты событий для пользователя: {}", id);
+        return userService.getFeed(id);
     }
 }
