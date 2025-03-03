@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmrate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.relational.core.sql.In;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmrate.exception.ExceptionMessages;
 import ru.yandex.practicum.filmrate.exception.NotFoundException;
@@ -12,7 +11,6 @@ import ru.yandex.practicum.filmrate.model.Film;
 import ru.yandex.practicum.filmrate.model.Genre;
 import ru.yandex.practicum.filmrate.model.Operation;
 import ru.yandex.practicum.filmrate.model.User;
-import ru.yandex.practicum.filmrate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmrate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmrate.storage.user.UserStorage;
 
@@ -22,7 +20,6 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.List;
 
 @Slf4j
 @Service
@@ -36,8 +33,6 @@ public class FilmService {
     private MPAService mpaService;
     @Autowired
     private GenreSevice genreSevice;
-    @Autowired
-    private final DirectorStorage directorStorage;
     @Autowired
     private FeedService feedService;
 
@@ -85,7 +80,6 @@ public class FilmService {
         Film film = filmStorage.read(filmId);
 
         film.setGenres(genreSevice.getGenresByFilmId(filmId));
-        film.setDirectors(directorStorage.getDirectorsByFilmId(filmId));
         return film;
     }
 
@@ -109,9 +103,5 @@ public class FilmService {
                 .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.FILM_NOT_FOUND_ERROR, userId)));
         filmStorage.removeLike(film, user);
         feedService.create(EventType.LIKE, Operation.REMOVE, userId, filmId);
-    }
-
-    public List<Film> getSortedFilms (int directorId, String sortBy) {
-        return filmStorage.sortFilms(directorId, sortBy);
     }
 }
