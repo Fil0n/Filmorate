@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -85,14 +84,12 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public Collection<User> addFriend(User user, User friend) {
+    public void addFriend(User user, User friend) {
         Set<User> userFriends = friends.get(friend.getId());
         userFriends.add(user);
 
         userFriends = friends.get(user.getId());
         userFriends.add(friend);
-
-        return userFriends.stream().collect(Collectors.toList());
     }
 
     @Override

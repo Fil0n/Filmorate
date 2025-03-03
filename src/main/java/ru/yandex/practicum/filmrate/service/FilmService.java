@@ -7,12 +7,17 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmrate.exception.ExceptionMessages;
 import ru.yandex.practicum.filmrate.exception.NotFoundException;
 import ru.yandex.practicum.filmrate.model.Film;
+import ru.yandex.practicum.filmrate.model.Genre;
 import ru.yandex.practicum.filmrate.model.User;
 import ru.yandex.practicum.filmrate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmrate.storage.user.UserStorage;
 
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
 
 @Slf4j
 @Service
@@ -22,17 +27,45 @@ public class FilmService {
     private FilmStorage filmStorage;
     @Autowired
     private UserStorage userStorage;
+    @Autowired
+    private MPAService mpaService;
+    @Autowired
+    private GenreSevice genreSevice;
 
     public Collection<Film> findAll() {
         return filmStorage.findAll();
     }
 
     public Film create(Film film) {
+        updateMPAAndGenre(film);
         return filmStorage.create(film);
     }
 
     public Film update(Film film) throws NotFoundException {
+        updateMPAAndGenre(film);
         return filmStorage.update(film);
+    }
+
+    private void updateMPAAndGenre(Film film) {
+        if (film.getGenres() != null) {
+            Set<Genre> filmGenres = new HashSet<>(film.getGenres());
+            Set<Genre> newGenres = new TreeSet<>(Comparator.comparingInt(Genre::getId));
+            filmGenres.forEach(g -> {
+                newGenres.add(genreSevice.findAll().stream()
+                        .filter(o -> o.getId() == g.getId())
+                        .findFirst()
+                        .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.GENRE_NOT_FOUND_ERROR, g.getId()))));
+            });
+
+            film.setGenres(newGenres);
+        }
+
+        if (film.getMpa() != null) {
+            film.setMpa(mpaService.findAll().stream()
+                    .filter(o -> o.getId() == film.getMpa().getId())
+                    .findFirst()
+                    .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.MPA_NOT_FOUND_ERROR, film.getMpa().getId()))));
+        }
     }
 
     public void delete(Long filmId) {
@@ -40,7 +73,10 @@ public class FilmService {
     }
 
     public Film read(Long filmId) {
-        return filmStorage.read(filmId);
+        Film film = filmStorage.read(filmId);
+
+        film.setGenres(genreSevice.getGenresByFilmId(filmId));
+        return film;
     }
 
     public Collection<Film> getMostPopular(Integer count) {

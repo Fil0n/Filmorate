@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmrate.storage.film;
 
 import ru.yandex.practicum.filmrate.model.Film;
 import ru.yandex.practicum.filmrate.model.User;
-
 import java.util.Collection;
 
 public interface FilmStorage {
