@@ -52,14 +52,14 @@ public class UserController {
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public User read(long id) {
+    public User read(@PathVariable("id") Long id) {
         log.info("Получен запрос получение пользователя: {}", id);
         return userService.read(id);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public void delete(long id) {
+    public void delete(@PathVariable("id") Long id) {
         log.info("Получен запрос удаление пользователя: {}", id);
         userService.delete(id);
     }

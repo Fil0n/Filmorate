@@ -123,37 +123,17 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getMostPopular(Integer count, Integer genreId, Integer year) {
+    public Collection<Film> getMostPopular(Integer count) {
         List<Film> films = new ArrayList<>();
-        List<Object> params = new ArrayList<>();
+        String query = "with l as (select l.film_id, count(l.film_id) likes from film f " +
+                "left join likes l on f.id = l.film_id " +
+                "group by film_id) " +
+                "select id, name, description, release_date, mpa, duration from film f " +
+                "left join l on f.id = l.film_id " +
+                "order by l.likes desc " +
+                "limit ?";
 
-        String query = "WITH l AS (" +
-                "SELECT l.film_id, COUNT(l.film_id) AS likes " +
-                "FROM likes l " +
-                "GROUP BY l.film_id" +
-                ") " +
-                "SELECT f.id, f.name, f.description, f.release_date, f.mpa, f.duration " +
-                "FROM film f " +
-                "LEFT JOIN l ON f.id = l.film_id ";
-
-        if (genreId != null) {
-            query += "JOIN film_genre g ON f.id = g.film_id AND g.genre_id = ? ";
-            params.add(genreId);
-        }
-
-        if (year != null) {
-            query += "WHERE EXTRACT(YEAR FROM f.release_date) = ? ";
-            params.add(year);
-        }
-
-        query += "ORDER BY l.likes DESC ";
-
-        if (count != null) {
-            query += "LIMIT ?";
-            params.add(count);
-        }
-
-        SqlRowSet filmsSet = jdbcTemplate.queryForRowSet(query, params.toArray());
+        SqlRowSet filmsSet = jdbcTemplate.queryForRowSet(query, count);
 
         while (filmsSet.next()) {
             films.add(mapRowSetToFilm(filmsSet));
