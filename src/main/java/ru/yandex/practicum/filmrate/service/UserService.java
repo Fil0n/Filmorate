@@ -38,7 +38,9 @@ public class UserService {
     }
 
     public User read(Long userId) {
-        return userStorage.read(userId);
+        User user = Optional.ofNullable(userStorage.read(userId))
+                .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.USER_NOT_FOUND_ERROR, userId)));
+        return user;
     }
 
     public List<User> getFriends(Long userId) {
