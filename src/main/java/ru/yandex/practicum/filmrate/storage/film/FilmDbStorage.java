@@ -142,6 +142,77 @@ public class FilmDbStorage implements FilmStorage {
         return films;
     }
 
+    public Collection<Film> getMostPopularByYear(Integer count, Integer year) {
+        List<Film> films = new ArrayList<>();
+        String query = "with l as (select l.film_id, count(l.film_id) likes from film f " +
+                "join likes l on f.id = l.film_id " +
+                "group by film_id) " +
+                "select id, name, description, release_date, mpa, duration from film f " +
+                "join l on f.id = l.film_id " +
+                "WHERE EXTRACT(YEAR FROM release_date) = ? " +
+                "order by l.likes desc " +
+                "limit ?";
+
+        SqlRowSet filmsSet = jdbcTemplate.queryForRowSet(query, year, count);
+
+        while (filmsSet.next()) {
+            films.add(mapRowSetToFilm(filmsSet));
+        }
+
+        return films;
+    }
+
+    public Collection<Film> getMostPopularByGenre(Integer count, Integer genre) {
+        List<Film> films = new ArrayList<>();
+        String query = "with l as (select l.film_id, count(l.film_id) likes from film f " +
+                "join likes l on f.id = l.film_id " +
+                "group by film_id), " +
+                "g AS (" +
+                "SELECT film_id " +
+                "FROM film_genre " +
+                "WHERE genre_id = ?) " +
+                "select * " +
+                "from film f " +
+                "join l on f.id = l.film_id " +
+                "left join g on f.id = g.film_id " +
+                "order by l.likes desc " +
+                "limit ?";
+
+        SqlRowSet filmsSet = jdbcTemplate.queryForRowSet(query, genre, count);
+
+        while (filmsSet.next()) {
+            films.add(mapRowSetToFilm(filmsSet));
+        }
+
+        return films;
+    }
+
+    public Collection<Film> getMostPopularByGenreAndYear(Integer count, Integer genre, Integer year) {
+        List<Film> films = new ArrayList<>();
+        String query = "with l as (select l.film_id, count(l.film_id) likes from film f " +
+                "join likes l on f.id = l.film_id " +
+                "group by film_id), " +
+                "g AS (" +
+                "SELECT film_id " +
+                "FROM film_genre " +
+                "WHERE genre_id = ?) " +
+                "select * " +
+                "from film f " +
+                "join l on f.id = l.film_id " +
+                "left join g on f.id = g.film_id " +
+                "WHERE EXTRACT(YEAR FROM release_date) = ? " +
+                "order by l.likes desc " +
+                "limit ?";
+
+        SqlRowSet filmsSet = jdbcTemplate.queryForRowSet(query, genre, year, count);
+
+        while (filmsSet.next()) {
+            films.add(mapRowSetToFilm(filmsSet));
+        }
+
+        return films;
+    }
+
     @Override
     public void addLike(Film film, User user) {
         String query = "insert into likes (film_id, user_id) values(?, ?)";

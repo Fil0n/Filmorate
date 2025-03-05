@@ -18,6 +18,12 @@ public interface FilmStorage {
 
     Collection<Film> getMostPopular(Integer count);
 
+    Collection<Film> getMostPopularByYear(Integer count, Integer year);
+
+    Collection<Film> getMostPopularByGenre(Integer count, Integer genreId);
+
+    Collection<Film> getMostPopularByGenreAndYear(Integer count, Integer genreId, Integer year);
+
     void addLike(Film film, User user);
 
     void removeLike(Film film, User user);

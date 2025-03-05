@@ -12,12 +12,7 @@ import ru.yandex.practicum.filmrate.model.User;
 import ru.yandex.practicum.filmrate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmrate.storage.user.UserStorage;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -79,8 +74,20 @@ public class FilmService {
         return film;
     }
 
-    public Collection<Film> getMostPopular(Integer count) {
-        return filmStorage.getMostPopular(count);
+    public Collection<Film> getMostPopular(Integer count, Integer genreId, Integer year) {
+        if (genreId != null) {
+            genreSevice.read(genreId);
+        }
+
+        if (genreId == null && year == null) {
+            return filmStorage.getMostPopular(count);
+        } else if (genreId == null) {
+            return filmStorage.getMostPopularByYear(count, year);
+        } else if (year == null) {
+            return filmStorage.getMostPopularByGenre(count, genreId);
+        } else {
+            return filmStorage.getMostPopularByGenreAndYear(count, genreId, year);
+        }
     }
 
     public void addLike(Long filmId, Long userId) {
