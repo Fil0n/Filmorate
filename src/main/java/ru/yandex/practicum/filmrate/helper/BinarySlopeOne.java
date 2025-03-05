@@ -24,14 +24,10 @@ public class BinarySlopeOne {
                 Set<Long> scoreSet1 = inputData.get(product1);
                 Set<Long> scoreSet2 = inputData.get(product2);
 
-                int occurences = 0;
-                for (Long userId : scoreSet1) {
-                    if (scoreSet2.contains(userId)) {
-                        occurences++;
-                    }
-                }
+                Set<Long> intersection = new HashSet<>(scoreSet1);
+                intersection.retainAll(scoreSet2);
 
-                double diff = (double) occurences / scoreSet1.size();
+                double diff = (double) intersection.size() / scoreSet1.size();
                 matrix.get(product1).put(product2, diff);
             }
         }
@@ -49,14 +45,14 @@ public class BinarySlopeOne {
         Map<Long, Double> predictions = new HashMap<>();
 
         for (Long productId : productIds) {
-            if (matrix.containsKey(productId)) {
-                for (Map.Entry<Long, Double> entry : matrix.get(productId).entrySet()) {
-                    Long recommendedProductId = entry.getKey();
-                    double diff = entry.getValue();
+            if (!matrix.containsKey(productId)) continue;
 
-                    if (!productIds.contains(recommendedProductId)) {
-                        predictions.put(recommendedProductId, predictions.getOrDefault(recommendedProductId, 0.0) + diff);
-                    }
+            for (Map.Entry<Long, Double> entry : matrix.get(productId).entrySet()) {
+                Long recommendedProductId = entry.getKey();
+                double diff = entry.getValue();
+
+                if (!productIds.contains(recommendedProductId)) {
+                    predictions.put(recommendedProductId, predictions.getOrDefault(recommendedProductId, 0.0) + diff);
                 }
             }
         }
