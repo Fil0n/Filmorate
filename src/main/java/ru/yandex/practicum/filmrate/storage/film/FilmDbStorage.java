@@ -126,7 +126,7 @@ public class FilmDbStorage implements FilmStorage {
     public Collection<Film> getMostPopular(Integer count) {
         List<Film> films = new ArrayList<>();
         String query = "with l as (select l.film_id, count(l.film_id) likes from film f " +
-                "left join likes l on f.id = l.film_id " +
+                "join likes l on f.id = l.film_id " +
                 "group by film_id) " +
                 "select id, name, description, release_date, mpa, duration from film f " +
                 "left join l on f.id = l.film_id " +
