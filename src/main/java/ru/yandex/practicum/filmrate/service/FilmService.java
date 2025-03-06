@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmrate.exception.NotFoundException;
 import ru.yandex.practicum.filmrate.model.Film;
 import ru.yandex.practicum.filmrate.model.Genre;
 import ru.yandex.practicum.filmrate.model.User;
+import ru.yandex.practicum.filmrate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmrate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmrate.storage.user.UserStorage;
 
@@ -26,6 +27,8 @@ public class FilmService {
     private MPAService mpaService;
     @Autowired
     private GenreSevice genreSevice;
+    @Autowired
+    private final DirectorStorage directorStorage;
 
     public Collection<Film> findAll() {
         return filmStorage.findAll();
@@ -71,15 +74,12 @@ public class FilmService {
         Film film = filmStorage.read(filmId);
 
         film.setGenres(genreSevice.getGenresByFilmId(filmId));
+        film.setDirectors(directorStorage.getDirectorsByFilmId(filmId));
         return film;
     }
 
-    public Collection<Film> getMostPopular(Integer count, Integer genreId, Integer year) {
-        if (genreId != null) {
-            genreSevice.read(genreId);
-        }
-
-        return filmStorage.getMostPopular(count, genreId, year);
+    public Collection<Film> getMostPopular(Integer count) {
+        return filmStorage.getMostPopular(count);
     }
 
     public void addLike(Long filmId, Long userId) {
@@ -98,11 +98,7 @@ public class FilmService {
         filmStorage.removeLike(film, user);
     }
 
-    public List<Film> getCommonFilms(long userId, long friendId) {
-        User user = Optional.ofNullable(userStorage.read(userId))
-                .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.USER_NOT_FOUND_ERROR, userId)));
-        User friend = Optional.ofNullable(userStorage.read(friendId))
-                .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.USER_NOT_FOUND_ERROR, friendId)));
-        return filmStorage.getCommonFilms(userId,friendId);
+    public List<Film> getSortedFilms(int directorId, String sortBy) {
+        return filmStorage.sortFilms(directorId, sortBy);
     }
 }

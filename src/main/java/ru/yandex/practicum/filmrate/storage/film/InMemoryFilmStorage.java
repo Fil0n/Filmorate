@@ -48,7 +48,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getMostPopular(Integer count, Integer genreId, Integer year) {
+    public Collection<Film> getMostPopular(Integer count) {
         return films.values()
                 .stream()
                 .sorted((film1, film2) -> {
@@ -72,7 +72,10 @@ public class InMemoryFilmStorage implements FilmStorage {
         likeUsers.remove(user);
     }
 
-    public List<Film> getCommonFilms(Long userId, Long friendId) {
-        return new ArrayList<>();
-    };
+    @Override
+    public List<Film> sortFilms(int directorId, String sortBy) {
+        List<Film> films = new ArrayList<>();
+        return films;
+    }
+
 }

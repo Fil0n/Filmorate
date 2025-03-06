@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmrate.storage.film;
 
 import ru.yandex.practicum.filmrate.model.Film;
 import ru.yandex.practicum.filmrate.model.User;
-
 import java.util.Collection;
 import java.util.List;
 
@@ -18,11 +17,11 @@ public interface FilmStorage {
 
     Film read(Long filmId);
 
-    Collection<Film> getMostPopular(Integer count, Integer genreId, Integer year);
+    Collection<Film> getMostPopular(Integer count);
 
     void addLike(Film film, User user);
 
     void removeLike(Film film, User user);
 
-    List<Film> getCommonFilms(Long userId, Long friendId);
+    List<Film> sortFilms(int directorId, String sortBy);
 }
