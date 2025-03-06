@@ -191,6 +191,34 @@ public class FilmDbStorage implements FilmStorage {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public Collection<Film> search(String queryString, Set<String> by) {
+        String query = """
+            select f.id, f.name, f.description, f.release_date, f.mpa, f.duration
+            from film f
+            where (1=1)
+        """;
+
+        List<Object> params = new ArrayList<>();
+        if (by.contains("title")) {
+            query += " and REGEXP_LIKE(lower(name), concat('(^| )',?))";
+            params.add(queryString.toLowerCase());
+        }
+
+        if (by.contains("director")) {
+            query += " and REGEXP_LIKE(lower(director), concat('(^| )',?))";
+            params.add(queryString.toLowerCase());
+        }
+
+        SqlRowSet filmsSet = jdbcTemplate.queryForRowSet(query, params.toArray());
+
+        List<Film> films = new ArrayList<>();
+        while (filmsSet.next()) {
+            films.add(mapRowSetToFilm(filmsSet));
+        }
+        return films;
+    }
+
     public Film mapRowSetToFilm(SqlRowSet rowSet) {
         MPA mpa = mpaService.findAll().stream()
                 .filter(m -> m.getId() == rowSet.getInt("mpa"))

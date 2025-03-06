@@ -20,6 +20,7 @@ import ru.yandex.practicum.filmrate.model.Film;
 import ru.yandex.practicum.filmrate.service.FilmService;
 
 import java.util.Collection;
+import java.util.Set;
 
 @Slf4j
 @RestController
@@ -86,6 +87,13 @@ public class FilmController {
     public Film read(@PathVariable("id") long id) {
         log.info("Получен запрос на получение фильма с идентификатором: {}", id);
         return filmService.read(id);
+    }
+
+    @GetMapping("/search")
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<Film> search(@RequestParam("query") String query, @RequestParam(value = "by", defaultValue = "title,director") Set<String> by) {
+        log.info("Получен запрос на поиск фильма по запросу: {}, по полю: {}", query, by);
+        return filmService.search(query, by);
     }
 
 }

@@ -98,4 +98,8 @@ public class FilmService {
                 .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.FILM_NOT_FOUND_ERROR, userId)));
         filmStorage.removeLike(film, user);
     }
+
+    public Collection<Film> search(String query, Set<String> by) {
+        return filmStorage.search(query, by);
+    }
 }

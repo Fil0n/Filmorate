@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmrate.storage.film;
 import ru.yandex.practicum.filmrate.model.Film;
 import ru.yandex.practicum.filmrate.model.User;
 import java.util.Collection;
+import java.util.Set;
 
 public interface FilmStorage {
 
@@ -23,4 +24,6 @@ public interface FilmStorage {
     void removeLike(Film film, User user);
 
     Collection<Film> getRecommendations(User user);
+
+    Collection<Film> search(String query, Set<String> by);
 }
