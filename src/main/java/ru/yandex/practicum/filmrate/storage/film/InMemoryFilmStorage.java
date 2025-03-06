@@ -6,7 +6,11 @@ import ru.yandex.practicum.filmrate.exception.NotFoundException;
 import ru.yandex.practicum.filmrate.model.Film;
 import ru.yandex.practicum.filmrate.model.User;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -48,7 +52,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getMostPopular(Integer count) {
+    public Collection<Film> getMostPopular(Integer count, Integer genreId, Integer year) {
         return films.values()
                 .stream()
                 .sorted((film1, film2) -> {
@@ -58,21 +62,6 @@ public class InMemoryFilmStorage implements FilmStorage {
                 })
                 .limit(count)
                 .collect(Collectors.toList());
-    }
-
-    @Override
-    public Collection<Film> getMostPopularByYear(Integer count, Integer year) {
-        return List.of();
-    }
-
-    @Override
-    public Collection<Film> getMostPopularByGenre(Integer count, Integer genreId) {
-        return List.of();
-    }
-
-    @Override
-    public Collection<Film> getMostPopularByGenreAndYear(Integer count, Integer genreId, Integer year) {
-        return List.of();
     }
 
     @Override

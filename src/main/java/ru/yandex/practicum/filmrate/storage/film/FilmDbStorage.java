@@ -123,88 +123,37 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getMostPopular(Integer count) {
+    public Collection<Film> getMostPopular(Integer count, Integer genreId, Integer year) {
         List<Film> films = new ArrayList<>();
-        String query = "with l as (select l.film_id, count(l.film_id) likes from film f " +
-                "join likes l on f.id = l.film_id " +
-                "group by film_id) " +
-                "select id, name, description, release_date, mpa, duration from film f " +
-                "join l on f.id = l.film_id " +
-                "order by l.likes desc " +
-                "limit ?";
+        List<Object> params = new ArrayList<>();
 
-        SqlRowSet filmsSet = jdbcTemplate.queryForRowSet(query, count);
+        String query = "WITH l AS (" +
+                "SELECT l.film_id, COUNT(l.film_id) AS likes " +
+                "FROM likes l " +
+                "GROUP BY l.film_id" +
+                ") " +
+                "SELECT f.id, f.name, f.description, f.release_date, f.mpa, f.duration " +
+                "FROM film f " +
+                "LEFT JOIN l ON f.id = l.film_id ";
 
-        while (filmsSet.next()) {
-            films.add(mapRowSetToFilm(filmsSet));
+        if (genreId != null) {
+            query += "JOIN film_genre g ON f.id = g.film_id AND g.genre_id = ? ";
+            params.add(genreId);
         }
 
-        return films;
-    }
-
-    public Collection<Film> getMostPopularByYear(Integer count, Integer year) {
-        List<Film> films = new ArrayList<>();
-        String query = "with l as (select l.film_id, count(l.film_id) likes from film f " +
-                "join likes l on f.id = l.film_id " +
-                "group by film_id) " +
-                "select id, name, description, release_date, mpa, duration from film f " +
-                "join l on f.id = l.film_id " +
-                "WHERE EXTRACT(YEAR FROM release_date) = ? " +
-                "order by l.likes desc " +
-                "limit ?";
-
-        SqlRowSet filmsSet = jdbcTemplate.queryForRowSet(query, year, count);
-
-        while (filmsSet.next()) {
-            films.add(mapRowSetToFilm(filmsSet));
+        if (year != null) {
+            query += "WHERE EXTRACT(YEAR FROM f.release_date) = ? ";
+            params.add(year);
         }
 
-        return films;
-    }
+        query += "ORDER BY l.likes DESC ";
 
-    public Collection<Film> getMostPopularByGenre(Integer count, Integer genre) {
-        List<Film> films = new ArrayList<>();
-        String query = "with l as (select l.film_id, count(l.film_id) likes from film f " +
-                "join likes l on f.id = l.film_id " +
-                "group by film_id), " +
-                "g AS (" +
-                "SELECT film_id " +
-                "FROM film_genre " +
-                "WHERE genre_id = ?) " +
-                "select * " +
-                "from film f " +
-                "join l on f.id = l.film_id " +
-                "left join g on f.id = g.film_id " +
-                "order by l.likes desc " +
-                "limit ?";
-
-        SqlRowSet filmsSet = jdbcTemplate.queryForRowSet(query, genre, count);
-
-        while (filmsSet.next()) {
-            films.add(mapRowSetToFilm(filmsSet));
+        if (count != null) {
+            query += "LIMIT ?";
+            params.add(count);
         }
 
-        return films;
-    }
-
-    public Collection<Film> getMostPopularByGenreAndYear(Integer count, Integer genre, Integer year) {
-        List<Film> films = new ArrayList<>();
-        String query = "with l as (select l.film_id, count(l.film_id) likes from film f " +
-                "join likes l on f.id = l.film_id " +
-                "group by film_id), " +
-                "g AS (" +
-                "SELECT film_id " +
-                "FROM film_genre " +
-                "WHERE genre_id = ?) " +
-                "select * " +
-                "from film f " +
-                "join l on f.id = l.film_id " +
-                "left join g on f.id = g.film_id " +
-                "WHERE EXTRACT(YEAR FROM release_date) = ? " +
-                "order by l.likes desc " +
-                "limit ?";
-
-        SqlRowSet filmsSet = jdbcTemplate.queryForRowSet(query, genre, year, count);
+        SqlRowSet filmsSet = jdbcTemplate.queryForRowSet(query, params.toArray());
 
         while (filmsSet.next()) {
             films.add(mapRowSetToFilm(filmsSet));
