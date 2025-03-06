@@ -22,7 +22,7 @@ import java.util.Set;
 @Slf4j
 @RequiredArgsConstructor
 @Repository
-public class DirectorDBStorage implements DirectorStorage {
+public class DirectorDBStorage implements DirectorStorage{
 
     private final JdbcTemplate jdbcTemplate;
     @Autowired
@@ -91,7 +91,7 @@ public class DirectorDBStorage implements DirectorStorage {
     }
 
     @Override
-    public Set<Director> getDirectorsByFilmId(Long filmId) {
+    public Set<Director> getDirectorsByFilmId (Long filmId) {
         String sql = "SELECT d.* FROM directors AS d "
                 + "JOIN film_director AS fd ON d.director_id = fd.director_id "
                 + "WHERE fd.film_id = ?";

@@ -25,7 +25,6 @@ public class DirectorController {
         log.info("Получен запрос получение списка всех режиссёров.");
         return directorService.findAllDirectors();
     }
-
     @GetMapping("/{id}")
     public Director returnDirectorById(@PathVariable Integer id) {
         return directorService.getDirectorById(id);
@@ -51,6 +50,7 @@ public class DirectorController {
         log.info("Получен запрос на удаление режиссёра с идентификатором: {}", id);
         directorService.delete(id);
     }
+
 
 
 }

@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmrate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.relational.core.sql.In;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmrate.exception.ExceptionMessages;
 import ru.yandex.practicum.filmrate.exception.NotFoundException;
@@ -98,7 +99,7 @@ public class FilmService {
         filmStorage.removeLike(film, user);
     }
 
-    public List<Film> getSortedFilms(int directorId, String sortBy) {
+    public List<Film> getSortedFilms (int directorId, String sortBy) {
         return filmStorage.sortFilms(directorId, sortBy);
     }
 }

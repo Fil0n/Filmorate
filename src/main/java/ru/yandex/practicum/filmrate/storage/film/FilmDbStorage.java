@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmrate.exception.ExceptionMessages;
 import ru.yandex.practicum.filmrate.exception.NotFoundException;
 import ru.yandex.practicum.filmrate.model.*;
+import ru.yandex.practicum.filmrate.service.DirectorService;
 import ru.yandex.practicum.filmrate.service.MPAService;
 import ru.yandex.practicum.filmrate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmrate.storage.genre.GenreStorage;
@@ -29,8 +30,8 @@ import java.util.Set;
 @RequiredArgsConstructor
 @Component
 public class FilmDbStorage implements FilmStorage {
-
     private final JdbcTemplate jdbcTemplate;
+
     @Autowired
     private MPAService mpaService;
     @Autowired
@@ -58,7 +59,7 @@ public class FilmDbStorage implements FilmStorage {
                 .usingGeneratedKeyColumns("id");
         film.setId((long) simpleJdbcInsert.executeAndReturnKey(toMap(film)).intValue());
         updateFilmGenre(film);
-        updateDirectors(film);
+        putDirectors(film);
         return film;
     }
 
@@ -88,16 +89,21 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update(query.toString(), params.toArray());
     }
 
-
-    private void updateDirectors(Film film) {
+    private void putDirectors(Film film) {
         Set<Director> directors = film.getDirectors();
-        if (directors != null) {
-            String sqlForDelete = "DELETE from film_director WHERE film_id = ?";
-            jdbcTemplate.update(sqlForDelete, film.getId());
+        if (directors != null && !directors.isEmpty()) {
             for (Director director : directors) {
                 String sql = "INSERT INTO film_director (film_id, director_id) VALUES (?, ?)";
                 jdbcTemplate.update(sql, film.getId(), director.getId());
             }
+        }
+    }
+
+    private void updateDirectors(Film film) {
+        Set<Director> directors = film.getDirectors();
+        for (Director director : directors) {
+            String sql = "UPDATE film_director SET director_id = ? WHERE film_id = ?";
+            jdbcTemplate.update(sql, director.getId(), film.getId());
         }
     }
 
@@ -206,26 +212,17 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> sortFilms(int directorId, String sortBy) {
-        String sqlForLikes = "SELECT f.* FROM film AS f "
-                + "JOIN film_director AS fd ON f.id = fd.film_id "
-                + "JOIN likes ON f.id = likes.film_id "
-                + "GROUP BY f.id "
-                + "HAVING fd.director_id = ? "
-                + "ORDER BY COUNT(likes.film_id) DESC";
-
-        String sqlForYear = "SELECT f.id, f.name, f.mpa, f.description, f.release_date, f.duration FROM film_director AS fd "
-                + "LEFT JOIN film AS f ON fd.film_id = f.id "
-                + "GROUP BY fd.film_id "
-                + "HAVING fd.director_id = ? "
-                + "ORDER BY f.release_date";
-        if (sortBy.equals("likes")) {
-            List<Film> filmsSortedByLikes = jdbcTemplate.query(sqlForLikes, this::mapToFilm, directorId);
-            return filmsSortedByLikes;
-        } else if (sortBy.equals("year")) {
-            List<Film> filmsSortedByYear = jdbcTemplate.query(sqlForYear, this::mapToFilm, directorId);
-            return filmsSortedByYear;
+        String sql;
+        if (sortBy.equals("year")) {
+            sql = "SELECT film.*, mpa.name FROM film join MPA on film.mpa = mpa.ID" +
+                    " join film_DIRECTOR FD on film.ID = FD.FILM_ID where FD.DIRECTOR_ID =? ORDER BY film.release_date ASC";
+        } else {
+            sql = "select FILM.*, mpa.name from FILM join MPA on FILM.mpa = mpa.id" +
+                    " left join LIKES L on FILM.ID = L.FILM_ID " +
+                    "join FILM_DIRECTOR FD on FILM.ID = FD.FILM_ID" +
+                    " where FD.DIRECTOR_ID = ? group by FILM.ID order by COUNT(L.USER_ID)";
         }
-        throw new NotFoundException("Измените запрос.");
+        return jdbcTemplate.query(sql, (rs, rowNum) -> mapToFilm(rs, rowNum), directorId);
     }
 
     private Film mapToFilm(ResultSet rs, int rowNum) throws SQLException {
