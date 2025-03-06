@@ -6,7 +6,12 @@ import ru.yandex.practicum.filmrate.exception.NotFoundException;
 import ru.yandex.practicum.filmrate.model.Film;
 import ru.yandex.practicum.filmrate.model.User;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
@@ -73,9 +78,12 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> sortFilms(int directorId, String sortBy) {
-        List<Film> films = new ArrayList<>();
-        return films;
+    public Collection<Film> getRecommendations(User user) {
+        return List.of();
     }
 
+    @Override
+    public Collection<Film> search(String query, Set<String> by) {
+        return List.of();
+    }
 }

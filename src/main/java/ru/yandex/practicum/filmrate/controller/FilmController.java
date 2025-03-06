@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,7 +20,7 @@ import ru.yandex.practicum.filmrate.model.Film;
 import ru.yandex.practicum.filmrate.service.FilmService;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @RestController
@@ -53,7 +54,7 @@ public class FilmController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public void delete(long id) {
+    public void delete(@PathVariable("id") Long id) {
         log.info("Получен запрос на удаление фильма с идентификатором: {}", id);
         filmService.delete(id);
     }
@@ -69,7 +70,7 @@ public class FilmController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void addLike(@PathVariable("id") Long filmId,
                         @PathVariable("userId") Long userId) {
-        log.info("Получен запрос на добавление лайка фильма с id = {} пользователем с id = {}", filmId, userId);
+        log.info("Получен запрос на добавление лайка фильма с id = {} пользователем с шв = {}", filmId, userId);
         filmService.addLike(filmId, userId);
     }
 
@@ -77,7 +78,7 @@ public class FilmController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeLike(@PathVariable("id") Long filmId,
                            @PathVariable("userId") Long userId) {
-        log.info("Получен запрос на удаление лайка фильма с id = {} пользователем с id = {}", filmId, userId);
+        log.info("Получен запрос на удаление лайка фильма с id = {} пользователем с шв = {}", filmId, userId);
         filmService.removeLike(filmId, userId);
     }
 
@@ -88,11 +89,11 @@ public class FilmController {
         return filmService.read(id);
     }
 
-    @GetMapping("/director/{directorId}")
+    @GetMapping("/search")
     @ResponseStatus(HttpStatus.OK)
-    public List<Film> getSortedFilms(@PathVariable int directorId, @RequestParam String sortBy) {
-        log.info("Получен запрос на получение списка фильмов режиссёра с идентификатором: {}", directorId);
-        return filmService.getSortedFilms(directorId, sortBy);
+    public Collection<Film> search(@RequestParam("query") String query, @RequestParam(value = "by", defaultValue = "title,director") Set<String> by) {
+        log.info("Получен запрос на поиск фильма по запросу: {}, по полю: {}", query, by);
+        return filmService.search(query, by);
     }
 
 }
