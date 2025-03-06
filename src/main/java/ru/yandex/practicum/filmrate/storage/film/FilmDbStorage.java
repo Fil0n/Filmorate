@@ -129,7 +129,7 @@ public class FilmDbStorage implements FilmStorage {
                 "join likes l on f.id = l.film_id " +
                 "group by film_id) " +
                 "select id, name, description, release_date, mpa, duration from film f " +
-                "join l on f.id = l.film_id " +
+                "left join l on f.id = l.film_id " +
                 "order by l.likes desc " +
                 "limit ?";
 

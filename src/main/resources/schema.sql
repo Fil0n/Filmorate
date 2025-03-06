@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS genre
 
 CREATE TABLE IF NOT EXISTS film_genre
 (
-    film_id         INTEGER NOT NULL REFERENCES film(id),
+    film_id         INTEGER NOT NULL REFERENCES film(id) ON DELETE CASCADE,
     genre_id        INTEGER NOT NULL REFERENCES genre(id)
 );
 
@@ -41,13 +41,13 @@ CREATE TABLE IF NOT EXISTS film_genre
 
 CREATE TABLE IF NOT EXISTS likes
 (
-    film_id         INTEGER NOT NULL REFERENCES film(id),
-    user_id         INTEGER NOT NULL REFERENCES users(id)
+    film_id         INTEGER NOT NULL REFERENCES film(id) ON DELETE CASCADE,
+    user_id         INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS friendship
 (
-    user_id             INTEGER NOT NULL REFERENCES users(id),
-    friend_id           INTEGER NOT NULL REFERENCES users(id),
+    user_id             INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    friend_id           INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     is_confirmed        BOOLEAN
 );
