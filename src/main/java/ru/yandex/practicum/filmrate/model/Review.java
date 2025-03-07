@@ -15,6 +15,7 @@ public class Review {
 
     @JsonProperty("content")
     @Size(max = 1500, message = "Текст ревью не может содержать более 1500 символов")
+    @NotNull
     private String textReview;
 
     @NotNull(message = "ID ревьюера не может быть null")

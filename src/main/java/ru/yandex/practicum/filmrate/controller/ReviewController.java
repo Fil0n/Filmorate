@@ -21,13 +21,13 @@ public class ReviewController {
     private final ReviewService reviewService;
 
     @GetMapping("/{id}")
-    public Review getReviewById(@PathVariable long id) {
+    public Review getById(@PathVariable long id) {
         log.info("Получен запрос: Ревью по id");
-        return reviewService.getReviewById(id);
+        return reviewService.getById(id);
     }
 
     @GetMapping
-    public List<Review> getAllFilmReviews(@RequestParam int filmId,
+    public List<Review> getAllFilmReviews(@RequestParam(required = false) Long filmId,
                                           @RequestParam(defaultValue = "10") int count) {
         log.info("Получен запрос: Все ревью к фильму");
         return reviewService.getAllFilmReviews(count, filmId);
@@ -35,53 +35,49 @@ public class ReviewController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Review createReview(@Valid @RequestBody Review review) {
+    public Review create(@Valid @RequestBody Review review) {
         log.info("Получен запрос на создание review");
-        return reviewService.createReview(review);
+        return reviewService.create(review);
     }
 
     @PutMapping
-    public Review updateReview(@Valid @RequestBody Review newReview) {
+    public Review update(@Valid @RequestBody Review newReview) {
         log.info("Получен запрос на изменение review");
-        return reviewService.updateReview(newReview);
+        return reviewService.update(newReview);
     }
 
     @PutMapping("/{id}/like/{userId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void likeReview(@PathVariable Long id,
-                           @PathVariable Long userId) {
+    public void like(@PathVariable Long id,
+                     @PathVariable Long userId) {
         log.info("Получен запрос на добавления лайка");
-        reviewService.likeReview(id, userId);
+        reviewService.like(id, userId);
     }
 
     @PutMapping("/{id}/dislike/{userId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void dislikeReview(@PathVariable Long id,
-                              @PathVariable Long userId) {
+    public void dislike(@PathVariable Long id,
+                        @PathVariable Long userId) {
         log.info("Получен запрос на добавления дизлайка");
-        reviewService.dislikeReview(id, userId);
+        reviewService.dislike(id, userId);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteReview(@PathVariable long id) {
+    public void delete(@PathVariable long id) {
         log.info("Получен запрос на удаление review");
-        reviewService.deleteReview(id);
+        reviewService.delete(id);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteLikeReview(@PathVariable long id,
-                                 @PathVariable long userId) {
+    public void deleteLike(@PathVariable long id,
+                           @PathVariable long userId) {
         log.info("Получен запрос на удаления лайка");
-        reviewService.deleteLikeReview(id, userId);
+        reviewService.deleteLike(id, userId);
     }
 
     @DeleteMapping("/{id}/dislike/{userId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteDislikeReview(@PathVariable long id,
-                                    @PathVariable long userId) {
+    public void deleteDislike(@PathVariable long id,
+                              @PathVariable long userId) {
         log.info("Получен запрос на удаления дизлайка");
-        reviewService.deleteDislikeReview(id, userId);
+        reviewService.deleteDislike(id, userId);
     }
 }
