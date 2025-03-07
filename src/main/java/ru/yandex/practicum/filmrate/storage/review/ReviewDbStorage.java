@@ -104,18 +104,13 @@ public class ReviewDbStorage implements ReviewStorage {
                 "SET film_id = ?, text_review = ?, is_positive = ? " +
                 "WHERE id = ?";
 
-        int rowsAffected = jdbcTemplate.update(sqlQuery,
+        jdbcTemplate.update(sqlQuery,
                 newReview.getFilmId(),
                 newReview.getTextReview(),
                 newReview.getIsPositiveReview(),
                 newReview.getId());
 
-        if (rowsAffected == 0) {
-            throw new NotFoundException("Ревью с id " + newReview.getId() + " не найдено");
-        }
-
         Review review = getById(newReview.getId());
-
         newReview.setRating(review.getRating());
 
         return newReview;
