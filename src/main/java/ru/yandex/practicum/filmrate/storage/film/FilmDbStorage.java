@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmrate.exception.ExceptionMessages;
 import ru.yandex.practicum.filmrate.exception.NotFoundException;
 import ru.yandex.practicum.filmrate.model.*;
+import ru.yandex.practicum.filmrate.service.DirectorService;
+import ru.yandex.practicum.filmrate.model.*;
 import ru.yandex.practicum.filmrate.service.MPAService;
 import ru.yandex.practicum.filmrate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmrate.storage.genre.GenreStorage;

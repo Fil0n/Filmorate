@@ -22,7 +22,7 @@ import java.util.Set;
 @Slf4j
 @RequiredArgsConstructor
 @Repository
-public class DirectorDBStorage implements DirectorStorage {
+public class DirectorDBStorage implements DirectorStorage{
 
     private final JdbcTemplate jdbcTemplate;
     @Autowired
