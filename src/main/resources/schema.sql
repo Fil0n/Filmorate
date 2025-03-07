@@ -58,10 +58,9 @@ CREATE TABLE IF NOT EXISTS review
     user_id INT NOT NULL,
     film_id INT NOT NULL,
     text_review VARCHAR(1500),
-    rating INT NOT NULL,
     is_positive BOOLEAN NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (film_id) REFERENCES film(id) ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (film_id) REFERENCES film(id) ON DELETE CASCADE
 );
 
 create TABLE IF NOT EXISTS review_reactions (
@@ -69,6 +68,6 @@ create TABLE IF NOT EXISTS review_reactions (
     review_id INT NOT NULL,
     is_positive BOOLEAN NOT NULL,
     PRIMARY KEY (user_id, review_id),
-    FOREIGN KEY (user_id) REFERENCES users(id) ON delete CASCADE ON update CASCADE,
-    FOREIGN KEY (review_id) REFERENCES review(id) ON delete CASCADE ON update CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (review_id) REFERENCES review(id) ON DELETE CASCADE
 );
