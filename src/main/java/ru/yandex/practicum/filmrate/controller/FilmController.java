@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -60,9 +59,11 @@ public class FilmController {
 
     @GetMapping("/popular")
     @ResponseStatus(HttpStatus.OK)
-    public Collection<Film> getPopularFilms(@RequestParam(value = "count", defaultValue = "10") Integer count) {
-        log.info("Получен запрос на получение популярных фильмо в количестве: {}", count);
-        return filmService.getMostPopular(count);
+    public Collection<Film> getPopularFilms(@RequestParam(required = false) Integer count,
+                                            @RequestParam(required = false) Integer genreId,
+                                            @RequestParam(required = false) Integer year) {
+        log.info("Получен запрос на получение популярных фильмов");
+        return filmService.getMostPopular(count, genreId, year);
     }
 
     @PutMapping("/{id}/like/{userId}")
