@@ -32,10 +32,7 @@ public class ReviewDbStorage implements ReviewStorage {
     @Override
     public Review getById(long id) throws EmptyResultDataAccessException {
         String sqlQuery = "WITH l AS (" +
-                "SELECT " +
-                "rr.review_id, " +
-                "COALESCE(SUM(CASE WHEN rr.is_positive = TRUE THEN 1 ELSE 0 END) - " +
-                "SUM(CASE WHEN rr.is_positive = FALSE THEN 1 ELSE 0 END), 0) AS rating " +
+                "SELECT rr.review_id, SUM(CASE WHEN rr.is_positive THEN 1 ELSE -1 END) AS rating " +
                 "FROM review_reactions rr " +
                 "GROUP BY rr.review_id " +
                 ") " +
@@ -52,14 +49,11 @@ public class ReviewDbStorage implements ReviewStorage {
         List<Object> params = new ArrayList<>();
 
         String sqlQuery = "WITH l AS (" +
-                "SELECT " +
-                "rr.review_id, " +
-                "COALESCE(SUM(CASE WHEN rr.is_positive = TRUE THEN 1 ELSE 0 END) - " +
-                "SUM(CASE WHEN rr.is_positive = FALSE THEN 1 ELSE 0 END), 0) AS rating " +
+                "SELECT rr.review_id, SUM(CASE WHEN rr.is_positive THEN 1 ELSE -1 END) AS rating " +
                 "FROM review_reactions rr " +
                 "GROUP BY rr.review_id " +
                 ") " +
-                "SELECT r.*, COALESCE(l.rating, 0) AS rating  " +
+                "SELECT r.*, COALESCE(l.rating, 0) AS rating " +
                 "FROM review r " +
                 "LEFT JOIN l ON r.id = l.review_id ";
 
