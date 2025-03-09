@@ -31,7 +31,7 @@ public class DirectorDBStorage implements DirectorStorage{
     @Override
     public Director getDirectorById(int id) {
         try {
-            String sql = "SELECT * FROM directors WHERE director_id = ?";
+            String sql = "select director_id, director_name from directors where director_id = ?";
             Director director = jdbcTemplate.queryForObject(sql, directorRowMapper, id);
             return director;
         } catch (Exception e) {
@@ -41,14 +41,14 @@ public class DirectorDBStorage implements DirectorStorage{
 
     @Override
     public List<Director> getAllDirectors() {
-        String sql = "SELECT * FROM directors";
+        String sql = "select director_id, director_name from directors";
         List<Director> directors = jdbcTemplate.query(sql, directorRowMapper);
         return directors;
     }
 
     @Override
     public Director createDirector(Director director) {
-        String sql = "INSERT INTO directors (director_name) VALUES (?)";
+        String sql = "insert into directors (director_name) values (?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(
                 connection -> {
@@ -64,7 +64,7 @@ public class DirectorDBStorage implements DirectorStorage{
     @Override
     public Director update(Director director) {
         if (doesDirectorExist(director.getId())) {
-            String sql = "UPDATE directors SET director_name = ? WHERE director_id = ?";
+            String sql = "update directors set director_name = ? where director_id = ?";
             jdbcTemplate.update(sql, director.getName(), director.getId());
             Director thisdirector = getDirectorById(director.getId());
             return thisdirector;
@@ -75,9 +75,9 @@ public class DirectorDBStorage implements DirectorStorage{
 
     @Override
     public void deleteDirectorById(int directorId) {
-        String sql = "DELETE FROM directors WHERE director_id = ?";
+        String sql = "delete from directors where director_id = ?";
         jdbcTemplate.update(sql, directorId);
-        String sqlForFilms = "DELETE FROM film_director WHERE director_id = ?";
+        String sqlForFilms = "delete from film_director where director_id = ?";
         jdbcTemplate.update(sqlForFilms, directorId);
     }
 
@@ -92,9 +92,9 @@ public class DirectorDBStorage implements DirectorStorage{
 
     @Override
     public Set<Director> getDirectorsByFilmId(Long filmId) {
-        String sql = "SELECT d.* FROM directors AS d "
-                + "JOIN film_director AS fd ON d.director_id = fd.director_id "
-                + "WHERE fd.film_id = ?";
+        String sql = "select d.director_id, d.director_name from directors as d "
+                + "join film_director as fd on d.director_id = fd.director_id "
+                + "where fd.film_id = ?";
         List<Director> onlyListOfDirectors = jdbcTemplate.query(sql, directorRowMapper, filmId);
         Set<Director> directors = new HashSet<>(onlyListOfDirectors);
         return directors;

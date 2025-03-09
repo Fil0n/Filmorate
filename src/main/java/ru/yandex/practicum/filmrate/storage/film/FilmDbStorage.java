@@ -93,18 +93,33 @@ public class FilmDbStorage implements FilmStorage {
 
     private void updateDirectors(Film film) {
         Set<Director> directors = film.getDirectors();
-        if (directors != null) {
-            String sqlForDelete = "DELETE from film_director WHERE film_id = ?";
-            jdbcTemplate.update(sqlForDelete, film.getId());
-            for (Director director : directors) {
-                String sql = "INSERT INTO film_director (film_id, director_id) VALUES (?, ?)";
-                jdbcTemplate.update(sql, film.getId(), director.getId());
-            }
+        if (directors == null || directors.isEmpty()) {
+            return;
         }
+
+        String sqlForDelete = "delete from film_director where film_id = ?";
+        jdbcTemplate.update(sqlForDelete, film.getId());
+
+            StringBuilder query = new StringBuilder("insert into film_director(film_id, director_id) values ");
+
+            List<Object> params = new ArrayList<>();
+            int i = 0;
+            for (Director director : directors) {
+                if (i == 0) {
+                    query.append("(?, ?)");
+                } else {
+                    query.append(", (?, ?)");
+                }
+
+                params.add(film.getId());
+                params.add(director.getId());
+                i++;
+            }
+            jdbcTemplate.update(query.toString(), params.toArray());
     }
 
     public void deleteFilmGenre(Long filmId) {
-        String query = "Delete from film_genre where film_id = ?";
+        String query = "delete from film_genre where film_id = ?";
         jdbcTemplate.update(query, filmId);
     }
 
@@ -208,18 +223,18 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> sortFilms(int directorId, String sortBy) {
-        String sqlForLikes = "SELECT f.* FROM film AS f "
-                + "JOIN film_director AS fd ON f.id = fd.film_id "
-                + "JOIN likes ON f.id = likes.film_id "
-                + "GROUP BY f.id "
-                + "HAVING fd.director_id = ? "
-                + "ORDER BY COUNT(likes.film_id) DESC";
+        String sqlForLikes = "select f.id, f.name, f.mpa, f.description, f.release_date, f.duration from film as f "
+                + "join film_director as fd on f.id = fd.film_id "
+                + "join likes on f.id = likes.film_id "
+                + "where fd.director_id = ? "
+                + "group by f.id "
+                + "order by count(likes.film_id) desc";
 
-        String sqlForYear = "SELECT f.id, f.name, f.mpa, f.description, f.release_date, f.duration FROM film_director AS fd "
-                + "LEFT JOIN film AS f ON fd.film_id = f.id "
-                + "GROUP BY fd.film_id "
-                + "HAVING fd.director_id = ? "
-                + "ORDER BY f.release_date";
+        String sqlForYear = "select f.id, f.name, f.mpa, f.description, f.release_date, f.duration from film_director as fd "
+                + "left join film as f on fd.film_id = f.id "
+                + "where fd.director_id = ? "
+                + "group by fd.film_id "
+                + "order by f.release_date";
         if (sortBy.equals("likes")) {
             List<Film> filmsSortedByLikes = jdbcTemplate.query(sqlForLikes, this::mapToFilm, directorId);
             return filmsSortedByLikes;

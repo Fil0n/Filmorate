@@ -23,12 +23,12 @@ public class DirectorController {
     @ResponseStatus(HttpStatus.OK)
     public Collection<Director> findAll() {
         log.info("Получен запрос получение списка всех режиссёров.");
-        return directorService.findAllDirectors();
+        return directorService.findAll();
     }
 
     @GetMapping("/{id}")
-    public Director returnDirectorById(@PathVariable Integer id) {
-        return directorService.getDirectorById(id);
+    public Director getById(@PathVariable Integer id) {
+        return directorService.getById(id);
     }
 
     @PostMapping
