@@ -17,13 +17,13 @@ import java.util.Set;
 public class DirectorService {
 
     @Autowired
-    private DirectorStorage directorStorage;
+    private final DirectorStorage directorStorage;
 
-    public Collection<Director> findAllDirectors() {
+    public Collection<Director> findAll() {
         return directorStorage.getAllDirectors();
     }
 
-    public Director getDirectorById(int id) {
+    public Director getById(int id) {
         return directorStorage.getDirectorById(id);
     }
 

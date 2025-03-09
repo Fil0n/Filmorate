@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmrate.exception.ExceptionMessages;
 import ru.yandex.practicum.filmrate.exception.NotFoundException;
 import ru.yandex.practicum.filmrate.model.*;
 import ru.yandex.practicum.filmrate.service.DirectorService;
+import ru.yandex.practicum.filmrate.model.*;
 import ru.yandex.practicum.filmrate.service.MPAService;
 import ru.yandex.practicum.filmrate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmrate.storage.genre.GenreStorage;
@@ -30,8 +31,8 @@ import java.util.Set;
 @RequiredArgsConstructor
 @Component
 public class FilmDbStorage implements FilmStorage {
-    private final JdbcTemplate jdbcTemplate;
 
+    private final JdbcTemplate jdbcTemplate;
     @Autowired
     private MPAService mpaService;
     @Autowired
@@ -59,7 +60,7 @@ public class FilmDbStorage implements FilmStorage {
                 .usingGeneratedKeyColumns("id");
         film.setId((long) simpleJdbcInsert.executeAndReturnKey(toMap(film)).intValue());
         updateFilmGenre(film);
-        putDirectors(film);
+        updateDirectors(film);
         return film;
     }
 
@@ -89,26 +90,36 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update(query.toString(), params.toArray());
     }
 
-    private void putDirectors(Film film) {
-        Set<Director> directors = film.getDirectors();
-        if (directors != null && !directors.isEmpty()) {
-            for (Director director : directors) {
-                String sql = "INSERT INTO film_director (film_id, director_id) VALUES (?, ?)";
-                jdbcTemplate.update(sql, film.getId(), director.getId());
-            }
-        }
-    }
 
     private void updateDirectors(Film film) {
         Set<Director> directors = film.getDirectors();
-        for (Director director : directors) {
-            String sql = "UPDATE film_director SET director_id = ? WHERE film_id = ?";
-            jdbcTemplate.update(sql, director.getId(), film.getId());
+        if (directors == null || directors.isEmpty()) {
+            return;
         }
+
+        String sqlForDelete = "delete from film_director where film_id = ?";
+        jdbcTemplate.update(sqlForDelete, film.getId());
+
+            StringBuilder query = new StringBuilder("insert into film_director(film_id, director_id) values ");
+
+            List<Object> params = new ArrayList<>();
+            int i = 0;
+            for (Director director : directors) {
+                if (i == 0) {
+                    query.append("(?, ?)");
+                } else {
+                    query.append(", (?, ?)");
+                }
+
+                params.add(film.getId());
+                params.add(director.getId());
+                i++;
+            }
+            jdbcTemplate.update(query.toString(), params.toArray());
     }
 
     public void deleteFilmGenre(Long filmId) {
-        String query = "Delete from film_genre where film_id = ?";
+        String query = "delete from film_genre where film_id = ?";
         jdbcTemplate.update(query, filmId);
     }
 
@@ -212,17 +223,26 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> sortFilms(int directorId, String sortBy) {
-        String sql;
-        if (sortBy.equals("year")) {
-            sql = "SELECT film.*, mpa.name FROM film join MPA on film.mpa = mpa.ID" +
-                    " join film_DIRECTOR FD on film.ID = FD.FILM_ID where FD.DIRECTOR_ID =? ORDER BY film.release_date ASC";
-        } else {
-            sql = "select FILM.*, mpa.name from FILM join MPA on FILM.mpa = mpa.id" +
-                    " left join LIKES L on FILM.ID = L.FILM_ID " +
-                    "join FILM_DIRECTOR FD on FILM.ID = FD.FILM_ID" +
-                    " where FD.DIRECTOR_ID = ? group by FILM.ID order by COUNT(L.USER_ID)";
+        String sqlForLikes = "select f.id, f.name, f.mpa, f.description, f.release_date, f.duration from film as f "
+                + "join film_director as fd on f.id = fd.film_id "
+                + "join likes on f.id = likes.film_id "
+                + "where fd.director_id = ? "
+                + "group by f.id "
+                + "order by count(likes.film_id) desc";
+
+        String sqlForYear = "select f.id, f.name, f.mpa, f.description, f.release_date, f.duration from film_director as fd "
+                + "left join film as f on fd.film_id = f.id "
+                + "where fd.director_id = ? "
+                + "group by fd.film_id "
+                + "order by f.release_date";
+        if (sortBy.equals("likes")) {
+            List<Film> filmsSortedByLikes = jdbcTemplate.query(sqlForLikes, this::mapToFilm, directorId);
+            return filmsSortedByLikes;
+        } else if (sortBy.equals("year")) {
+            List<Film> filmsSortedByYear = jdbcTemplate.query(sqlForYear, this::mapToFilm, directorId);
+            return filmsSortedByYear;
         }
-        return jdbcTemplate.query(sql, (rs, rowNum) -> mapToFilm(rs, rowNum), directorId);
+        throw new NotFoundException("Измените запрос.");
     }
 
     private Film mapToFilm(ResultSet rs, int rowNum) throws SQLException {
