@@ -9,7 +9,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmrate.exception.NotFoundException;
 import ru.yandex.practicum.filmrate.model.Review;
 
 import java.sql.PreparedStatement;
@@ -36,7 +35,7 @@ public class ReviewDbStorage implements ReviewStorage {
                 "FROM review_reactions rr " +
                 "GROUP BY rr.review_id " +
                 ") " +
-                "SELECT r.*, COALESCE(l.rating, 0) AS rating " +
+                "SELECT r.id, r.user_id, r.film_id, r.text_review, r.is_positive, COALESCE(l.rating, 0) AS rating " +
                 "FROM review r " +
                 "LEFT JOIN l ON r.id = l.review_id " +
                 "WHERE r.id = ? ";
@@ -53,7 +52,7 @@ public class ReviewDbStorage implements ReviewStorage {
                 "FROM review_reactions rr " +
                 "GROUP BY rr.review_id " +
                 ") " +
-                "SELECT r.*, COALESCE(l.rating, 0) AS rating " +
+                "SELECT r.id, r.user_id, r.film_id, r.text_review, r.is_positive, COALESCE(l.rating, 0) AS rating " +
                 "FROM review r " +
                 "LEFT JOIN l ON r.id = l.review_id ";
 
