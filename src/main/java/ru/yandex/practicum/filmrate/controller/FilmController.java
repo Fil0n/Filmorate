@@ -62,16 +62,18 @@ public class FilmController {
 
     @GetMapping("/popular")
     @ResponseStatus(HttpStatus.OK)
-    public Collection<Film> getPopularFilms(@RequestParam(value = "count", defaultValue = "10") Integer count) {
-        log.info("Получен запрос на получение популярных фильмо в количестве: {}", count);
-        return filmService.getMostPopular(count);
+    public Collection<Film> getPopularFilms(@RequestParam(required = false) Integer count,
+                                            @RequestParam(required = false) Integer genreId,
+                                            @RequestParam(required = false) Integer year) {
+        log.info("Получен запрос на получение популярных фильмов");
+        return filmService.getMostPopular(count, genreId, year);
     }
 
     @PutMapping("/{id}/like/{userId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void addLike(@PathVariable("id") Long filmId,
                         @PathVariable("userId") Long userId) {
-        log.info("Получен запрос на добавление лайка фильма с id = {} пользователем с шв = {}", filmId, userId);
+        log.info("Получен запрос на добавление лайка фильма с id = {} пользователем с id = {}", filmId, userId);
         filmService.addLike(filmId, userId);
     }
 
@@ -79,7 +81,7 @@ public class FilmController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeLike(@PathVariable("id") Long filmId,
                            @PathVariable("userId") Long userId) {
-        log.info("Получен запрос на удаление лайка фильма с id = {} пользователем с шв = {}", filmId, userId);
+        log.info("Получен запрос на удаление лайка фильма с id = {} пользователем с id = {}", filmId, userId);
         filmService.removeLike(filmId, userId);
     }
 
