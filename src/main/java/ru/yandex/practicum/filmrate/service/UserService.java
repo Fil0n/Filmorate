@@ -7,9 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmrate.exception.ExceptionMessages;
 import ru.yandex.practicum.filmrate.exception.NotFoundException;
-import ru.yandex.practicum.filmrate.model.Film;
 import ru.yandex.practicum.filmrate.model.User;
-import ru.yandex.practicum.filmrate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmrate.storage.user.UserStorage;
 
 import java.util.Collection;
@@ -22,8 +20,6 @@ import java.util.Optional;
 public class UserService {
     @Autowired
     private UserStorage userStorage;
-    @Autowired
-    private FilmStorage filmStorage;
 
     public Collection<User> findAll() {
         return userStorage.findAll();
@@ -78,12 +74,6 @@ public class UserService {
         User friend = Optional.ofNullable(userStorage.read(friendId))
                 .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.USER_NOT_FOUND_ERROR, friendId)));
         userStorage.removeFriend(user, friend);
-    }
-
-    public Collection<Film> getFilmRecommendations(Long userId) {
-        User user = Optional.ofNullable(userStorage.read(userId))
-                .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.USER_NOT_FOUND_ERROR, userId)));
-        return filmStorage.getRecommendations(user);
     }
 
 }
