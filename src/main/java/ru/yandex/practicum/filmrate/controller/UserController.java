@@ -96,6 +96,13 @@ public class UserController {
         userService.removeFriend(userId, friendId);
     }
 
+    @GetMapping("/{id}/feed")
+    @ResponseStatus(HttpStatus.OK)
+    public List<Feed> feed(long id) {
+        log.info("Получен запрос получение ленты событий для пользователя: {}", id);
+        return userService.getFeed(id);
+    }
+
     @GetMapping("/{id}/recommendations")
     @ResponseStatus(HttpStatus.OK)
     public Collection<Film> getFilmRecommendations(@PathVariable("id") Long userId) {
