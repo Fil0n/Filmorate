@@ -21,6 +21,7 @@ import ru.yandex.practicum.filmrate.service.FilmService;
 
 import java.util.Collection;
 import java.util.Set;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -94,6 +95,13 @@ public class FilmController {
     public Collection<Film> search(@RequestParam("query") String query, @RequestParam(value = "by", defaultValue = "title,director") Set<String> by) {
         log.info("Получен запрос на поиск фильма по запросу: {}, по полю: {}", query, by);
         return filmService.search(query, by);
+    }
+
+    @GetMapping("/director/{directorId}")
+    @ResponseStatus(HttpStatus.OK)
+    public List<Film> getSortedFilms(@PathVariable int directorId, @RequestParam String sortBy) {
+        log.info("Получен запрос на получение списка фильмов режиссёра с идентификатором: {}", directorId);
+        return filmService.getSortedFilms(directorId, sortBy);
     }
 
 }

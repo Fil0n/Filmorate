@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmrate.exception.NotFoundException;
 import ru.yandex.practicum.filmrate.model.Film;
 import ru.yandex.practicum.filmrate.model.Genre;
 import ru.yandex.practicum.filmrate.model.User;
+import ru.yandex.practicum.filmrate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmrate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmrate.storage.user.UserStorage;
 
@@ -18,6 +19,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -31,6 +33,8 @@ public class FilmService {
     private MPAService mpaService;
     @Autowired
     private GenreSevice genreSevice;
+    @Autowired
+    private final DirectorStorage directorStorage;
 
     public Collection<Film> findAll() {
         return filmStorage.findAll();
@@ -76,11 +80,16 @@ public class FilmService {
         Film film = filmStorage.read(filmId);
 
         film.setGenres(genreSevice.getGenresByFilmId(filmId));
+        film.setDirectors(directorStorage.getDirectorsByFilmId(filmId));
         return film;
     }
 
-    public Collection<Film> getMostPopular(Integer count) {
-        return filmStorage.getMostPopular(count);
+    public Collection<Film> getMostPopular(Integer count, Integer genreId, Integer year) {
+        if (genreId != null) {
+            genreSevice.read(genreId);
+        }
+
+        return filmStorage.getMostPopular(count, genreId, year);
     }
 
     public void addLike(Long filmId, Long userId) {
@@ -101,5 +110,9 @@ public class FilmService {
 
     public Collection<Film> search(String query, Set<String> by) {
         return filmStorage.search(query, by);
+    }
+
+    public List<Film> getSortedFilms(int directorId, String sortBy) {
+        return filmStorage.sortFilms(directorId, sortBy);
     }
 }
