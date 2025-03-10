@@ -105,7 +105,7 @@ public class UserController {
 
     @GetMapping("/{id}/feed")
     @ResponseStatus(HttpStatus.OK)
-    public List<Feed> feed(long id) {
+    public List<Feed> feed(@PathVariable("id") long id) {
         log.info("Получен запрос получение ленты событий для пользователя: {}", id);
         return userService.getFeed(id);
     }

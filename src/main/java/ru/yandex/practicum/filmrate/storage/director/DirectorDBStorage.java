@@ -4,13 +4,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmrate.exception.DataDoNotExistException;
-import ru.yandex.practicum.filmrate.exception.NotFoundException;
 import ru.yandex.practicum.filmrate.model.Director;
 
 import java.sql.PreparedStatement;
@@ -22,7 +20,7 @@ import java.util.Set;
 @Slf4j
 @RequiredArgsConstructor
 @Repository
-public class DirectorDBStorage implements DirectorStorage{
+public class DirectorDBStorage implements DirectorStorage {
 
     private final JdbcTemplate jdbcTemplate;
     @Autowired
@@ -67,9 +65,9 @@ public class DirectorDBStorage implements DirectorStorage{
         } catch (Exception e) {
             throw new DataDoNotExistException("Режиссёра с таким id = " + director.getId() + " не существует.");
         }
-            String sql = "update directors set director_name = ? where director_id = ?";
-            jdbcTemplate.update(sql, director.getName(), director.getId());
-            return director;
+        String sql = "update directors set director_name = ? where director_id = ?";
+        jdbcTemplate.update(sql, director.getName(), director.getId());
+        return director;
     }
 
     @Override
