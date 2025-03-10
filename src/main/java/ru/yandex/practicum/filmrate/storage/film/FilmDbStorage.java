@@ -223,23 +223,15 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> sortFilms(int directorId, String sortBy) {
-        String sqlForLikes = "select f.id, f.name, f.mpa, f.description, f.release_date, f.duration from film as f "
-                + "join film_director as fd on f.id = fd.film_id "
-                + "join likes on f.id = likes.film_id "
-                + "where fd.director_id = ? "
-                + "group by f.id "
-                + "order by count(likes.film_id) desc";
-
-        String sqlForYear = "select f.id, f.name, f.mpa, f.description, f.release_date, f.duration from film_director as fd "
-                + "left join film as f on fd.film_id = f.id "
-                + "where fd.director_id = ? "
-                + "group by fd.film_id "
-                + "order by f.release_date";
+        String sqlPartOne = "select f.id, f.name, f.mpa, f.description, f.release_date, f.duration from film_director as fd "
+                + "left join film as f on fd.film_id = f.id ";
+        String sqlPartTwo = "where fd.director_id = ? "
+                + "group by fd.film_id ";
         if (sortBy.equals("likes")) {
-            List<Film> filmsSortedByLikes = jdbcTemplate.query(sqlForLikes, this::mapToFilm, directorId);
+            List<Film> filmsSortedByLikes = jdbcTemplate.query(sqlPartOne + "join likes on f.id = likes.film_id " + sqlPartTwo + "order by count(likes.film_id) desc", this::mapToFilm, directorId);
             return filmsSortedByLikes;
         } else if (sortBy.equals("year")) {
-            List<Film> filmsSortedByYear = jdbcTemplate.query(sqlForYear, this::mapToFilm, directorId);
+            List<Film> filmsSortedByYear = jdbcTemplate.query(sqlPartOne + sqlPartTwo + "order by f.release_date", this::mapToFilm, directorId);
             return filmsSortedByYear;
         }
         throw new NotFoundException("Измените запрос.");

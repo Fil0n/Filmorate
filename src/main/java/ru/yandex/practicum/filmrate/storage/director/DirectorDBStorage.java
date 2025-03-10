@@ -57,37 +57,25 @@ public class DirectorDBStorage implements DirectorStorage{
                     return stmt;
                 }, keyHolder);
         director.setId(keyHolder.getKey().intValue());
-        Director addedDirector = getDirectorById(director.getId());
-        return addedDirector;
+        return director;
     }
 
     @Override
     public Director update(Director director) {
-        if (doesDirectorExist(director.getId())) {
+        try {
+            getDirectorById(director.getId());
+        } catch (Exception e) {
+            throw new DataDoNotExistException("Режиссёра с таким id = " + director.getId() + " не существует.");
+        }
             String sql = "update directors set director_name = ? where director_id = ?";
             jdbcTemplate.update(sql, director.getName(), director.getId());
-            Director thisdirector = getDirectorById(director.getId());
-            return thisdirector;
-        } else {
-            throw new NotFoundException("Режиссёра с таким " + director.getId() + " не существует.");
-        }
+            return director;
     }
 
     @Override
     public void deleteDirectorById(int directorId) {
         String sql = "delete from directors where director_id = ?";
         jdbcTemplate.update(sql, directorId);
-        String sqlForFilms = "delete from film_director where director_id = ?";
-        jdbcTemplate.update(sqlForFilms, directorId);
-    }
-
-    private boolean doesDirectorExist(Integer directorId) {
-        try {
-            getDirectorById(directorId);
-            return true;
-        } catch (EmptyResultDataAccessException exception) {
-            return false;
-        }
     }
 
     @Override
