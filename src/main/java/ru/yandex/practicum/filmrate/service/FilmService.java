@@ -83,8 +83,12 @@ public class FilmService {
         return film;
     }
 
-    public Collection<Film> getMostPopular(Integer count) {
-        return filmStorage.getMostPopular(count);
+    public Collection<Film> getMostPopular(Integer count, Integer genreId, Integer year) {
+        if (genreId != null) {
+            genreSevice.read(genreId);
+        }
+
+        return filmStorage.getMostPopular(count, genreId, year);
     }
 
     public void addLike(Long filmId, Long userId) {

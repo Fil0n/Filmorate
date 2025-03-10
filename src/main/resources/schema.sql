@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS genre
 
 CREATE TABLE IF NOT EXISTS film_genre
 (
-    film_id         INTEGER NOT NULL REFERENCES film(id),
+    film_id         INTEGER NOT NULL REFERENCES film(id) ON DELETE CASCADE,
     genre_id        INTEGER NOT NULL REFERENCES genre(id)
 );
 
@@ -51,13 +51,33 @@ CREATE TABLE IF NOT EXISTS film_genre
 
 CREATE TABLE IF NOT EXISTS likes
 (
-    film_id         INTEGER NOT NULL REFERENCES film(id),
-    user_id         INTEGER NOT NULL REFERENCES users(id)
+    film_id         INTEGER NOT NULL REFERENCES film(id) ON DELETE CASCADE,
+    user_id         INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS friendship
 (
-    user_id             INTEGER NOT NULL REFERENCES users(id),
-    friend_id           INTEGER NOT NULL REFERENCES users(id),
+    user_id             INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    friend_id           INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     is_confirmed        BOOLEAN
+);
+
+CREATE TABLE IF NOT EXISTS review
+(
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    film_id INT NOT NULL,
+    text_review VARCHAR(1500),
+    is_positive BOOLEAN NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (film_id) REFERENCES film(id) ON DELETE CASCADE
+);
+
+create TABLE IF NOT EXISTS review_reactions (
+    user_id INT NOT NULL,
+    review_id INT NOT NULL,
+    is_positive BOOLEAN NOT NULL,
+    PRIMARY KEY (user_id, review_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (review_id) REFERENCES review(id) ON DELETE CASCADE
 );

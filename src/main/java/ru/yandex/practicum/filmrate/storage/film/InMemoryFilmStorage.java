@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
@@ -52,7 +53,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getMostPopular(Integer count) {
+    public Collection<Film> getMostPopular(Integer count, Integer genreId, Integer year) {
         return films.values()
                 .stream()
                 .sorted((film1, film2) -> {
@@ -76,5 +77,8 @@ public class InMemoryFilmStorage implements FilmStorage {
         likeUsers.remove(user);
     }
 
-
+    @Override
+    public Collection<Film> getRecommendations(User user) {
+        return List.of();
+    }
 }
