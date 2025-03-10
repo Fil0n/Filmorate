@@ -10,9 +10,13 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmrate.exception.ExceptionMessages;
 import ru.yandex.practicum.filmrate.exception.NotFoundException;
-import ru.yandex.practicum.filmrate.model.*;
 import ru.yandex.practicum.filmrate.service.DirectorService;
-import ru.yandex.practicum.filmrate.model.*;
+import ru.yandex.practicum.filmrate.helper.BinarySlopeOne;
+import ru.yandex.practicum.filmrate.model.Film;
+import ru.yandex.practicum.filmrate.model.Genre;
+import ru.yandex.practicum.filmrate.model.MPA;
+import ru.yandex.practicum.filmrate.model.User;
+import ru.yandex.practicum.filmrate.model.Director;
 import ru.yandex.practicum.filmrate.service.MPAService;
 import ru.yandex.practicum.filmrate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmrate.storage.genre.GenreStorage;
@@ -25,6 +29,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.HashSet;
+import java.util.stream.Collectors;
 
 @Primary
 @Slf4j
@@ -33,6 +39,7 @@ import java.util.Set;
 public class FilmDbStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
+
     @Autowired
     private MPAService mpaService;
     @Autowired
@@ -163,17 +170,37 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getMostPopular(Integer count) {
+    public Collection<Film> getMostPopular(Integer count, Integer genreId, Integer year) {
         List<Film> films = new ArrayList<>();
-        String query = "with l as (select l.film_id, count(l.film_id) likes from film f " +
-                "join likes l on f.id = l.film_id " +
-                "group by film_id) " +
-                "select id, name, description, release_date, mpa, duration from film f " +
-                "join l on f.id = l.film_id " +
-                "order by l.likes desc " +
-                "limit ?";
+        List<Object> params = new ArrayList<>();
 
-        SqlRowSet filmsSet = jdbcTemplate.queryForRowSet(query, count);
+        String query = "WITH l AS (" +
+                "SELECT l.film_id, COUNT(l.film_id) AS likes " +
+                "FROM likes l " +
+                "GROUP BY l.film_id" +
+                ") " +
+                "SELECT f.id, f.name, f.description, f.release_date, f.mpa, f.duration " +
+                "FROM film f " +
+                "LEFT JOIN l ON f.id = l.film_id ";
+
+        if (genreId != null) {
+            query += "JOIN film_genre g ON f.id = g.film_id AND g.genre_id = ? ";
+            params.add(genreId);
+        }
+
+        if (year != null) {
+            query += "WHERE EXTRACT(YEAR FROM f.release_date) = ? ";
+            params.add(year);
+        }
+
+        query += "ORDER BY l.likes DESC ";
+
+        if (count != null) {
+            query += "LIMIT ?";
+            params.add(count);
+        }
+
+        SqlRowSet filmsSet = jdbcTemplate.queryForRowSet(query, params.toArray());
 
         while (filmsSet.next()) {
             films.add(mapRowSetToFilm(filmsSet));
@@ -194,12 +221,45 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update(sqlQuery, film.getId(), user.getId());
     }
 
+    @Override
+    public Collection<Film> getRecommendations(User user) {
+        // получаем все фильмы, которым поставили лайки пользователи совпадающие с фильмами, которым поставил лайк user
+        String query = """
+            select l.film_id, l.user_id, f.id, f.name, f.description, f.release_date, f.mpa, f.duration
+            from likes l
+            join film f on f.id = l.film_id
+            where l.user_id in (
+               select fl.user_id from likes fl
+               where fl.film_id in (select film_id from likes where likes.user_id = ?)
+            )
+        """;
+
+        SqlRowSet filmsSet = jdbcTemplate.queryForRowSet(query, user.getId());
+
+        Map<Long, Film> films = new HashMap<>();
+        Map<Long, Set<Long>> filmsLikes = new HashMap<>(); // фильм - пользователи
+        // подготавливаем данные для алгоритма рекомендаций
+        while (filmsSet.next()) {
+            if (!films.containsKey(filmsSet.getLong("film_id"))) {
+                films.put(filmsSet.getLong("film_id"), mapRowSetToFilm(filmsSet));
+            }
+            filmsLikes.putIfAbsent(filmsSet.getLong("film_id"), new HashSet<>());
+            filmsLikes.get(filmsSet.getLong("film_id")).add(filmsSet.getLong("user_id"));
+        }
+
+        // получаем рекомендации для user
+        Map<Long, Double> recommendations = new BinarySlopeOne(filmsLikes).predict(user.getId());
+
+        return recommendations.keySet().stream()
+                .map(films::get)
+                .collect(Collectors.toList());
+    }
+
     public Film mapRowSetToFilm(SqlRowSet rowSet) {
         MPA mpa = mpaService.findAll().stream()
                 .filter(m -> m.getId() == rowSet.getInt("mpa"))
                 .findFirst()
                 .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.MPA_NOT_FOUND_ERROR, rowSet.getInt("mpa"))));
-
 
         return Film.builder()
                 .id(rowSet.getLong("id"))

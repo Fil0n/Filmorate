@@ -53,16 +53,18 @@ public class FilmController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public void delete(long id) {
+    public void delete(@PathVariable("id") Long id) {
         log.info("Получен запрос на удаление фильма с идентификатором: {}", id);
         filmService.delete(id);
     }
 
     @GetMapping("/popular")
     @ResponseStatus(HttpStatus.OK)
-    public Collection<Film> getPopularFilms(@RequestParam(value = "count", defaultValue = "10") Integer count) {
-        log.info("Получен запрос на получение популярных фильмо в количестве: {}", count);
-        return filmService.getMostPopular(count);
+    public Collection<Film> getPopularFilms(@RequestParam(required = false) Integer count,
+                                            @RequestParam(required = false) Integer genreId,
+                                            @RequestParam(required = false) Integer year) {
+        log.info("Получен запрос на получение популярных фильмов");
+        return filmService.getMostPopular(count, genreId, year);
     }
 
     @PutMapping("/{id}/like/{userId}")
