@@ -19,6 +19,7 @@ import ru.yandex.practicum.filmrate.model.Film;
 import ru.yandex.practicum.filmrate.service.FilmService;
 
 import java.util.Collection;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -70,7 +71,7 @@ public class FilmController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void addLike(@PathVariable("id") Long filmId,
                         @PathVariable("userId") Long userId) {
-        log.info("Получен запрос на добавление лайка фильма с id = {} пользователем с шв = {}", filmId, userId);
+        log.info("Получен запрос на добавление лайка фильма с id = {} пользователем с id = {}", filmId, userId);
         filmService.addLike(filmId, userId);
     }
 
@@ -78,7 +79,7 @@ public class FilmController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeLike(@PathVariable("id") Long filmId,
                            @PathVariable("userId") Long userId) {
-        log.info("Получен запрос на удаление лайка фильма с id = {} пользователем с шв = {}", filmId, userId);
+        log.info("Получен запрос на удаление лайка фильма с id = {} пользователем с id = {}", filmId, userId);
         filmService.removeLike(filmId, userId);
     }
 
@@ -87,6 +88,13 @@ public class FilmController {
     public Film read(@PathVariable("id") long id) {
         log.info("Получен запрос на получение фильма с идентификатором: {}", id);
         return filmService.read(id);
+    }
+
+    @GetMapping("/director/{directorId}")
+    @ResponseStatus(HttpStatus.OK)
+    public List<Film> getSortedFilms(@PathVariable int directorId, @RequestParam String sortBy) {
+        log.info("Получен запрос на получение списка фильмов режиссёра с идентификатором: {}", directorId);
+        return filmService.getSortedFilms(directorId, sortBy);
     }
 
 }
