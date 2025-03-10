@@ -15,6 +15,7 @@ import ru.yandex.practicum.filmrate.model.Genre;
 import ru.yandex.practicum.filmrate.model.MPA;
 import ru.yandex.practicum.filmrate.model.User;
 import ru.yandex.practicum.filmrate.service.MPAService;
+import ru.yandex.practicum.filmrate.storage.genre.GenreStorage;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,6 +33,8 @@ public class FilmDbStorage implements FilmStorage {
 
     @Autowired
     private MPAService mpaService;
+    @Autowired
+    private final GenreStorage genreStorage;
 
     @Override
     public Collection<Film> findAll() {
@@ -174,6 +177,23 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update(sqlQuery, film.getId(), user.getId());
     }
 
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        List<Film> films = new ArrayList<>();
+        String sql = "select f.id, f.name, f.description, f.release_date, f.duration, f.mpa " +
+                "from film as f " +
+                "join likes as l on f.id = l.film_id " +
+                "where l.film_id in (select film_id from likes where user_id = ?) " +
+                "and l.film_id in (select film_id from likes where user_id = ?) " +
+                "group by f.id " +
+                "order by count(l.user_id) desc";
+
+        SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sql, userId, friendId);
+        while (rowSet.next()) {
+            films.add(mapRowSetToFilm(rowSet));
+        }
+        return films;
+    }
+
     public Film mapRowSetToFilm(SqlRowSet rowSet) {
         MPA mpa = mpaService.findAll().stream()
                 .filter(m -> m.getId() == rowSet.getInt("mpa"))
@@ -187,6 +207,7 @@ public class FilmDbStorage implements FilmStorage {
                 .releaseDate(rowSet.getDate("release_date") == null ? null : rowSet.getDate("release_date").toLocalDate())
                 .duration(rowSet.getInt("duration"))
                 .mpa(mpa)
+                .genres(genreStorage.getGenresByFilmId(rowSet.getLong("id")))
                 .build();
     }
 

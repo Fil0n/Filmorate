@@ -4,6 +4,7 @@ import ru.yandex.practicum.filmrate.model.Film;
 import ru.yandex.practicum.filmrate.model.User;
 
 import java.util.Collection;
+import java.util.List;
 
 public interface FilmStorage {
 
@@ -22,4 +23,6 @@ public interface FilmStorage {
     void addLike(Film film, User user);
 
     void removeLike(Film film, User user);
+
+    List<Film> getCommonFilms(Long userId, Long friendId);
 }

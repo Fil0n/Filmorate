@@ -12,12 +12,7 @@ import ru.yandex.practicum.filmrate.model.User;
 import ru.yandex.practicum.filmrate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmrate.storage.user.UserStorage;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -101,5 +96,13 @@ public class FilmService {
         User user = Optional.ofNullable(userStorage.read(userId))
                 .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.FILM_NOT_FOUND_ERROR, userId)));
         filmStorage.removeLike(film, user);
+    }
+
+    public List<Film> getCommonFilms(long userId, long friendId) {
+        User user = Optional.ofNullable(userStorage.read(userId))
+                .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.USER_NOT_FOUND_ERROR, userId)));
+        User friend = Optional.ofNullable(userStorage.read(friendId))
+                .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.USER_NOT_FOUND_ERROR, friendId)));
+        return filmStorage.getCommonFilms(userId,friendId);
     }
 }
