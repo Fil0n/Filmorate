@@ -208,6 +208,8 @@ public class FilmDbStorage implements FilmStorage {
                 .releaseDate(rowSet.getDate("release_date") == null ? null : rowSet.getDate("release_date").toLocalDate())
                 .duration(rowSet.getInt("duration"))
                 .mpa(mpa)
+                .genres(genreStorage.getGenresByFilmId(rowSet.getLong("id")))
+                .directors(directorStorage.getDirectorsByFilmId(rowSet.getLong("id")))
                 .build();
     }
 
@@ -227,26 +229,21 @@ public class FilmDbStorage implements FilmStorage {
                 + "left join film as f on fd.film_id = f.id ";
         String sqlPartTwo = "where fd.director_id = ? "
                 + "group by fd.film_id ";
+        List<Film> filmsSorted = new ArrayList<>();
         if (sortBy.equals("likes")) {
-            List<Film> filmsSortedByLikes = jdbcTemplate.query(sqlPartOne + "join likes on f.id = likes.film_id " + sqlPartTwo + "order by count(likes.film_id) desc", this::mapToFilm, directorId);
-            return filmsSortedByLikes;
+             SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlPartOne + "join likes on f.id = likes.film_id " + sqlPartTwo + "order by count(likes.film_id) desc", directorId);
+             while (sqlRowSet.next()) {
+                 filmsSorted.add(mapRowSetToFilm(sqlRowSet));
+             }
         } else if (sortBy.equals("year")) {
-            List<Film> filmsSortedByYear = jdbcTemplate.query(sqlPartOne + sqlPartTwo + "order by f.release_date", this::mapToFilm, directorId);
-            return filmsSortedByYear;
+            SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlPartOne + sqlPartTwo + "order by f.release_date", directorId);
+            while (sqlRowSet.next()) {
+                filmsSorted.add(mapRowSetToFilm(sqlRowSet));
+            }
+        } else {
+            throw new NotFoundException("Измените запрос.");
         }
-        throw new NotFoundException("Измените запрос.");
+        return filmsSorted;
     }
 
-    private Film mapToFilm(ResultSet rs, int rowNum) throws SQLException {
-        return Film.builder()
-                .id(rs.getLong("id"))
-                .name(rs.getString("name"))
-                .description(rs.getString("description"))
-                .duration(rs.getInt("duration"))
-                .releaseDate(rs.getDate("release_date").toLocalDate())
-                .mpa(mpaService.read(rs.getInt("mpa")))
-                .genres(genreStorage.getGenresByFilmId(rs.getLong("id")))
-                .directors(directorStorage.getDirectorsByFilmId(rs.getLong("id")))
-                .build();
-    }
 }
