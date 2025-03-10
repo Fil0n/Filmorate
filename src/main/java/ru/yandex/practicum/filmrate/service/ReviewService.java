@@ -8,9 +8,9 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmrate.exception.ExceptionMessages;
 import ru.yandex.practicum.filmrate.exception.NotFoundException;
-import ru.yandex.practicum.filmrate.model.Film;
+import ru.yandex.practicum.filmrate.model.EventType;
+import ru.yandex.practicum.filmrate.model.Operation;
 import ru.yandex.practicum.filmrate.model.Review;
-import ru.yandex.practicum.filmrate.model.User;
 import ru.yandex.practicum.filmrate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmrate.storage.review.ReviewStorage;
 import ru.yandex.practicum.filmrate.storage.user.UserStorage;
@@ -26,6 +26,7 @@ public class ReviewService {
     private final ReviewStorage reviewStorage;
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+    private final FeedService feedService;
 
 
     public Review getById(long id) {
@@ -38,7 +39,7 @@ public class ReviewService {
 
     public List<Review> getAllFilmReviews(int count, Long filmId) {
         if (filmId != null) {
-            Film film = Optional.ofNullable(filmStorage.read(filmId))
+            Optional.ofNullable(filmStorage.read(filmId))
                     .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.FILM_NOT_FOUND_ERROR,
                             filmId)));
         }
@@ -47,14 +48,16 @@ public class ReviewService {
     }
 
     public Review create(Review review) {
-        Film film = Optional.ofNullable(filmStorage.read(review.getFilmId()))
+        Optional.ofNullable(filmStorage.read(review.getFilmId()))
                 .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.FILM_NOT_FOUND_ERROR,
                         review.getFilmId())));
-        User user = Optional.ofNullable(userStorage.read(review.getUserId()))
+        Optional.ofNullable(userStorage.read(review.getUserId()))
                 .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.USER_NOT_FOUND_ERROR,
                         review.getUserId())));
 
-        return reviewStorage.create(review);
+        Review createdReview =  reviewStorage.create(review);
+        feedService.create(EventType.REVIEW, Operation.ADD, review.getUserId(), review.getId());
+        return createdReview;
     }
 
     public Review update(Review newReview) {
@@ -62,40 +65,42 @@ public class ReviewService {
             throw new ValidationException("Вы не указали id ревью, которое хотите изменить");
         }
 
-        Film film = Optional.ofNullable(filmStorage.read(newReview.getFilmId()))
+        Optional.ofNullable(filmStorage.read(newReview.getFilmId()))
                 .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.FILM_NOT_FOUND_ERROR,
                         newReview.getFilmId())));
-        User user = Optional.ofNullable(userStorage.read(newReview.getUserId()))
+        Optional.ofNullable(userStorage.read(newReview.getUserId()))
                 .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.USER_NOT_FOUND_ERROR,
                         newReview.getUserId())));
-        Review review = Optional.ofNullable(reviewStorage.getById(newReview.getId()))
+        Optional.ofNullable(reviewStorage.getById(newReview.getId()))
                 .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.REVIEW_NOT_FOUND_ERROR,
                         newReview.getId())));
-
+            feedService.create(EventType.REVIEW, Operation.UPDATE, newReview.getUserId(), newReview.getId());
             return reviewStorage.update(newReview);
 
     }
 
     public void like(Long id, Long userId) {
-        User user = Optional.ofNullable(userStorage.read(userId))
+        Optional.ofNullable(userStorage.read(userId))
                 .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.USER_NOT_FOUND_ERROR, userId)));
-        Review review = Optional.ofNullable(reviewStorage.getById(id))
+        Optional.ofNullable(reviewStorage.getById(id))
                 .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.REVIEW_NOT_FOUND_ERROR, id)));
 
         reviewStorage.like(id, userId);
     }
 
     public void dislike(Long id, Long userId) {
-        User user = Optional.ofNullable(userStorage.read(userId))
+        Optional.ofNullable(userStorage.read(userId))
                 .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.USER_NOT_FOUND_ERROR, userId)));
-        Review review = Optional.ofNullable(reviewStorage.getById(id))
+        Optional.ofNullable(reviewStorage.getById(id))
                 .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.REVIEW_NOT_FOUND_ERROR, id)));
 
         reviewStorage.dislike(id, userId);
     }
 
     public void delete(long id) {
+        Review review = getById(id);
         reviewStorage.delete(id);
+        feedService.create(EventType.REVIEW, Operation.REMOVE, review.getUserId(), review.getId());
     }
 
     public void deleteLike(long id, long userId) {

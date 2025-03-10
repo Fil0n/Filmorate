@@ -12,7 +12,6 @@ import ru.yandex.practicum.filmrate.model.Feed;
 import ru.yandex.practicum.filmrate.model.Operation;
 import ru.yandex.practicum.filmrate.model.Film;
 import ru.yandex.practicum.filmrate.model.User;
-import ru.yandex.practicum.filmrate.storage.feed.FeedStorage;
 import ru.yandex.practicum.filmrate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmrate.storage.user.UserStorage;
 

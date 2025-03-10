@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmrate.storage.user;
 
-import ru.yandex.practicum.filmrate.model.Feed;
 import ru.yandex.practicum.filmrate.model.User;
 
 import java.util.Collection;
