@@ -6,13 +6,7 @@ import ru.yandex.practicum.filmrate.exception.NotFoundException;
 import ru.yandex.practicum.filmrate.model.Film;
 import ru.yandex.practicum.filmrate.model.User;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -78,11 +72,6 @@ public class InMemoryFilmStorage implements FilmStorage {
         likeUsers.remove(user);
     }
 
-    @Override
-    public Collection<Film> getRecommendations(User user) {
-        return List.of();
-    }
-    @Override
     public List<Film> getCommonFilms(Long userId, Long friendId) {
         return new ArrayList<>();
     };

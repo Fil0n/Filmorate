@@ -12,13 +12,7 @@ import ru.yandex.practicum.filmrate.model.User;
 import ru.yandex.practicum.filmrate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmrate.storage.user.UserStorage;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.List;
+import java.util.*;
 
 @Slf4j
 @Service
