@@ -257,19 +257,24 @@ public class FilmDbStorage implements FilmStorage {
         String query = """
             select f.id, f.name, f.description, f.release_date, f.mpa, f.duration
             from film f
-            where (1=1)
+            left join film_director fd on f.id = fd.film_id
+            left join directors d on d.director_id = fd.director_id
+            left join likes on f.id = likes.film_id
+            where
         """;
 
         List<Object> params = new ArrayList<>();
         if (by.contains("title")) {
-            query += " and REGEXP_LIKE(lower(name), concat('(^| )',?))";
+            query += " REGEXP_LIKE(lower(f.name), concat('(^| )',?))";
             params.add(queryString.toLowerCase());
         }
 
         if (by.contains("director")) {
-            query += " and REGEXP_LIKE(lower(director), concat('(^| )',?))";
+            query += by.contains("title") ? " or " : "";
+            query += "REGEXP_LIKE(lower(d.director_name), concat('(^| )',?))";
             params.add(queryString.toLowerCase());
         }
+        query += " group by fd.film_id order by count(likes.film_id) desc";
 
         SqlRowSet filmsSet = jdbcTemplate.queryForRowSet(query, params.toArray());
 
