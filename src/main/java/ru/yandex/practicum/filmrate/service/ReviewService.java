@@ -77,7 +77,7 @@ public class ReviewService {
 
         Review updatedReview = reviewStorage.update(newReview);
         feedService.create(EventType.REVIEW, Operation.UPDATE, updatedReview.getUserId(), updatedReview.getId());
-        return newReview;
+        return updatedReview;
 
     }
 
