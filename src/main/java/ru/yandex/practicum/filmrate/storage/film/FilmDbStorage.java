@@ -10,7 +10,6 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmrate.exception.ExceptionMessages;
 import ru.yandex.practicum.filmrate.exception.NotFoundException;
-import ru.yandex.practicum.filmrate.service.DirectorService;
 import ru.yandex.practicum.filmrate.helper.BinarySlopeOne;
 import ru.yandex.practicum.filmrate.model.Film;
 import ru.yandex.practicum.filmrate.model.Genre;
@@ -21,8 +20,6 @@ import ru.yandex.practicum.filmrate.service.MPAService;
 import ru.yandex.practicum.filmrate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmrate.storage.genre.GenreStorage;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -107,22 +104,22 @@ public class FilmDbStorage implements FilmStorage {
         String sqlForDelete = "delete from film_director where film_id = ?";
         jdbcTemplate.update(sqlForDelete, film.getId());
 
-            StringBuilder query = new StringBuilder("insert into film_director(film_id, director_id) values ");
+        StringBuilder query = new StringBuilder("insert into film_director(film_id, director_id) values ");
 
-            List<Object> params = new ArrayList<>();
-            int i = 0;
-            for (Director director : directors) {
-                if (i == 0) {
-                    query.append("(?, ?)");
-                } else {
-                    query.append(", (?, ?)");
-                }
-
-                params.add(film.getId());
-                params.add(director.getId());
-                i++;
+        List<Object> params = new ArrayList<>();
+        int i = 0;
+        for (Director director : directors) {
+            if (i == 0) {
+                query.append("(?, ?)");
+            } else {
+                query.append(", (?, ?)");
             }
-            jdbcTemplate.update(query.toString(), params.toArray());
+
+            params.add(film.getId());
+            params.add(director.getId());
+            i++;
+        }
+        jdbcTemplate.update(query.toString(), params.toArray());
     }
 
     public void deleteFilmGenre(Long filmId) {
@@ -242,14 +239,14 @@ public class FilmDbStorage implements FilmStorage {
     public Collection<Film> getRecommendations(User user) {
         // получаем все фильмы, которым поставили лайки пользователи совпадающие с фильмами, которым поставил лайк user
         String query = """
-            select l.film_id, l.user_id, f.id, f.name, f.description, f.release_date, f.mpa, f.duration
-            from likes l
-            join film f on f.id = l.film_id
-            where l.user_id in (
-               select fl.user_id from likes fl
-               where fl.film_id in (select film_id from likes where likes.user_id = ?)
-            )
-        """;
+                    select l.film_id, l.user_id, f.id, f.name, f.description, f.release_date, f.mpa, f.duration
+                    from likes l
+                    join film f on f.id = l.film_id
+                    where l.user_id in (
+                       select fl.user_id from likes fl
+                       where fl.film_id in (select film_id from likes where likes.user_id = ?)
+                    )
+                """;
 
         SqlRowSet filmsSet = jdbcTemplate.queryForRowSet(query, user.getId());
 
@@ -270,6 +267,39 @@ public class FilmDbStorage implements FilmStorage {
         return recommendations.keySet().stream()
                 .map(films::get)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Collection<Film> search(String queryString, Set<String> by) {
+        String query = """
+            select f.id, f.name, f.description, f.release_date, f.mpa, f.duration
+            from film f
+            left join film_director fd on f.id = fd.film_id
+            left join directors d on d.director_id = fd.director_id
+            left join likes on f.id = likes.film_id
+            where
+        """;
+
+        List<Object> params = new ArrayList<>();
+        if (by.contains("title")) {
+            query += " REGEXP_LIKE(lower(f.name), concat('(^| )',?))";
+            params.add(queryString.toLowerCase());
+        }
+
+        if (by.contains("director")) {
+            query += by.contains("title") ? " or " : "";
+            query += "REGEXP_LIKE(lower(d.director_name), concat('(^| )',?))";
+            params.add(queryString.toLowerCase());
+        }
+        query += " group by fd.film_id order by count(likes.film_id) desc";
+
+        SqlRowSet filmsSet = jdbcTemplate.queryForRowSet(query, params.toArray());
+
+        List<Film> films = new ArrayList<>();
+        while (filmsSet.next()) {
+            films.add(mapRowSetToFilm(filmsSet));
+        }
+        return films;
     }
 
     public Film mapRowSetToFilm(SqlRowSet rowSet) {
@@ -308,10 +338,10 @@ public class FilmDbStorage implements FilmStorage {
                 + "group by fd.film_id ";
         List<Film> filmsSorted = new ArrayList<>();
         if (sortBy.equals("likes")) {
-             SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlPartOne + "join likes on f.id = likes.film_id " + sqlPartTwo + "order by count(likes.film_id) desc", directorId);
-             while (sqlRowSet.next()) {
-                 filmsSorted.add(mapRowSetToFilm(sqlRowSet));
-             }
+            SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlPartOne + "join likes on f.id = likes.film_id " + sqlPartTwo + "order by count(likes.film_id) desc", directorId);
+            while (sqlRowSet.next()) {
+                filmsSorted.add(mapRowSetToFilm(sqlRowSet));
+            }
         } else if (sortBy.equals("year")) {
             SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlPartOne + sqlPartTwo + "order by f.release_date", directorId);
             while (sqlRowSet.next()) {

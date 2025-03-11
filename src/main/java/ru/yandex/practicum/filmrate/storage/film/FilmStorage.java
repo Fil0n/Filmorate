@@ -2,8 +2,8 @@ package ru.yandex.practicum.filmrate.storage.film;
 
 import ru.yandex.practicum.filmrate.model.Film;
 import ru.yandex.practicum.filmrate.model.User;
-
 import java.util.Collection;
+import java.util.Set;
 import java.util.List;
 
 public interface FilmStorage {
@@ -29,4 +29,6 @@ public interface FilmStorage {
     List<Film> sortFilms(int directorId, String sortBy);
 
     Collection<Film> getRecommendations(User user);
+
+    Collection<Film> search(String query, Set<String> by);
 }
