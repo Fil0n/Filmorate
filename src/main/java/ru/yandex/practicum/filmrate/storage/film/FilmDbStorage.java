@@ -72,7 +72,8 @@ public class FilmDbStorage implements FilmStorage {
         deleteFilmGenre(film.getId());
         Set<Genre> genres = film.getGenres();
 
-        if (genres == null) {
+        if (genres == null || genres.isEmpty()) {
+            film.setGenres(new HashSet<>());
             return;
         }
 
@@ -98,6 +99,7 @@ public class FilmDbStorage implements FilmStorage {
     private void updateDirectors(Film film) {
         Set<Director> directors = film.getDirectors();
         if (directors == null || directors.isEmpty()) {
+            film.setDirectors(new HashSet<>());
             return;
         }
 
@@ -138,12 +140,8 @@ public class FilmDbStorage implements FilmStorage {
 
         jdbcTemplate.update(query, newFilm.getName(), newFilm.getDescription(),
                 newFilm.getReleaseDate(), newFilm.getDuration(), newFilm.getMpa().getId(), newFilm.getId());
-        if (newFilm.getGenres() != null && !newFilm.getGenres().isEmpty()) {
-            updateFilmGenre(newFilm);
-        }
-        if (newFilm.getDirectors() != null && !newFilm.getDirectors().isEmpty()) {
-            updateDirectors(newFilm);
-        }
+        updateFilmGenre(newFilm);
+        updateDirectors(newFilm);
         return newFilm;
     }
 
