@@ -10,11 +10,13 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmrate.exception.ExceptionMessages;
 import ru.yandex.practicum.filmrate.exception.NotFoundException;
+import ru.yandex.practicum.filmrate.helper.BinarySlopeOne;
 import ru.yandex.practicum.filmrate.model.Film;
 import ru.yandex.practicum.filmrate.model.Genre;
 import ru.yandex.practicum.filmrate.model.MPA;
 import ru.yandex.practicum.filmrate.model.User;
 import ru.yandex.practicum.filmrate.service.MPAService;
+import ru.yandex.practicum.filmrate.storage.genre.GenreStorage;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,6 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.HashSet;
+import java.util.stream.Collectors;
 
 @Primary
 @Slf4j
@@ -32,6 +36,8 @@ public class FilmDbStorage implements FilmStorage {
 
     @Autowired
     private MPAService mpaService;
+    @Autowired
+    private final GenreStorage genreStorage;
 
     @Override
     public Collection<Film> findAll() {
@@ -174,6 +180,57 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update(sqlQuery, film.getId(), user.getId());
     }
 
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        List<Film> films = new ArrayList<>();
+        String sql = "select f.id, f.name, f.description, f.release_date, f.duration, f.mpa " +
+                "from film as f " +
+                "join likes as l on f.id = l.film_id " +
+                "where l.film_id in (select film_id from likes where user_id = ?) " +
+                "and l.film_id in (select film_id from likes where user_id = ?) " +
+                "group by f.id " +
+                "order by count(l.user_id) desc";
+
+        SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sql, userId, friendId);
+        while (rowSet.next()) {
+            films.add(mapRowSetToFilm(rowSet));
+        }
+        return films;
+    }
+
+    @Override
+    public Collection<Film> getRecommendations(User user) {
+        // получаем все фильмы, которым поставили лайки пользователи совпадающие с фильмами, которым поставил лайк user
+        String query = """
+            select l.film_id, l.user_id, f.id, f.name, f.description, f.release_date, f.mpa, f.duration
+            from likes l
+            join film f on f.id = l.film_id
+            where l.user_id in (
+               select fl.user_id from likes fl
+               where fl.film_id in (select film_id from likes where likes.user_id = ?)
+            )
+        """;
+
+        SqlRowSet filmsSet = jdbcTemplate.queryForRowSet(query, user.getId());
+
+        Map<Long, Film> films = new HashMap<>();
+        Map<Long, Set<Long>> filmsLikes = new HashMap<>(); // фильм - пользователи
+        // подготавливаем данные для алгоритма рекомендаций
+        while (filmsSet.next()) {
+            if (!films.containsKey(filmsSet.getLong("film_id"))) {
+                films.put(filmsSet.getLong("film_id"), mapRowSetToFilm(filmsSet));
+            }
+            filmsLikes.putIfAbsent(filmsSet.getLong("film_id"), new HashSet<>());
+            filmsLikes.get(filmsSet.getLong("film_id")).add(filmsSet.getLong("user_id"));
+        }
+
+        // получаем рекомендации для user
+        Map<Long, Double> recommendations = new BinarySlopeOne(filmsLikes).predict(user.getId());
+
+        return recommendations.keySet().stream()
+                .map(films::get)
+                .collect(Collectors.toList());
+    }
+
     public Film mapRowSetToFilm(SqlRowSet rowSet) {
         MPA mpa = mpaService.findAll().stream()
                 .filter(m -> m.getId() == rowSet.getInt("mpa"))
@@ -187,6 +244,7 @@ public class FilmDbStorage implements FilmStorage {
                 .releaseDate(rowSet.getDate("release_date") == null ? null : rowSet.getDate("release_date").toLocalDate())
                 .duration(rowSet.getInt("duration"))
                 .mpa(mpa)
+                .genres(genreStorage.getGenresByFilmId(rowSet.getLong("id")))
                 .build();
     }
 

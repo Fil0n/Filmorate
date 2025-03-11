@@ -89,4 +89,10 @@ public class FilmController {
         return filmService.read(id);
     }
 
+    @GetMapping("/common")
+    public Collection<Film> getCommonFilms(
+            @RequestParam long userId,
+            @RequestParam long friendId) {
+        return filmService.getCommonFilms(userId, friendId);
+    }
 }
