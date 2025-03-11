@@ -6,8 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmrate.exception.ExceptionMessages;
 import ru.yandex.practicum.filmrate.exception.NotFoundException;
+import ru.yandex.practicum.filmrate.model.EventType;
 import ru.yandex.practicum.filmrate.model.Film;
 import ru.yandex.practicum.filmrate.model.Genre;
+import ru.yandex.practicum.filmrate.model.Operation;
 import ru.yandex.practicum.filmrate.model.User;
 import ru.yandex.practicum.filmrate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmrate.storage.film.FilmStorage;
@@ -35,6 +37,8 @@ public class FilmService {
     private GenreSevice genreSevice;
     @Autowired
     private final DirectorStorage directorStorage;
+    @Autowired
+    private FeedService feedService;
 
     public Collection<Film> findAll() {
         return filmStorage.findAll();
@@ -98,6 +102,7 @@ public class FilmService {
         User user = Optional.ofNullable(userStorage.read(userId))
                 .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.FILM_NOT_FOUND_ERROR, userId)));
         filmStorage.addLike(film, user);
+        feedService.create(EventType.LIKE, Operation.ADD, userId, filmId);
     }
 
     public void removeLike(Long filmId, Long userId) {
@@ -106,6 +111,7 @@ public class FilmService {
         User user = Optional.ofNullable(userStorage.read(userId))
                 .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.FILM_NOT_FOUND_ERROR, userId)));
         filmStorage.removeLike(film, user);
+        feedService.create(EventType.LIKE, Operation.REMOVE, userId, filmId);
     }
 
     public List<Film> getSortedFilms(int directorId, String sortBy) {
