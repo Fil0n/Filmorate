@@ -79,6 +79,12 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
+    public List<Film> sortFilms(int directorId, String sortBy) {
+        List<Film> films = new ArrayList<>();
+        return films;
+    }
+
+    @Override
     public Collection<Film> getRecommendations(User user) {
         return List.of();
     }
