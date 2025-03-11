@@ -121,4 +121,12 @@ public class FilmService {
     public List<Film> getSortedFilms(int directorId, String sortBy) {
         return filmStorage.sortFilms(directorId, sortBy);
     }
+
+    public List<Film> getCommonFilms(long userId, long friendId) {
+        User user = Optional.ofNullable(userStorage.read(userId))
+                .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.USER_NOT_FOUND_ERROR, userId)));
+        User friend = Optional.ofNullable(userStorage.read(friendId))
+                .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.USER_NOT_FOUND_ERROR, friendId)));
+        return filmStorage.getCommonFilms(userId,friendId);
+    }
 }

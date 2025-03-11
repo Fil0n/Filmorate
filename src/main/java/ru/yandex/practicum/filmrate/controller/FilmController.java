@@ -106,4 +106,10 @@ public class FilmController {
         return filmService.getSortedFilms(directorId, sortBy);
     }
 
+    @GetMapping("/common")
+    public Collection<Film> getCommonFilms(
+            @RequestParam long userId,
+            @RequestParam long friendId) {
+        return filmService.getCommonFilms(userId, friendId);
+    }
 }

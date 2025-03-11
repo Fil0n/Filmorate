@@ -218,6 +218,23 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update(sqlQuery, film.getId(), user.getId());
     }
 
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        List<Film> films = new ArrayList<>();
+        String sql = "select f.id, f.name, f.description, f.release_date, f.duration, f.mpa " +
+                "from film as f " +
+                "join likes as l on f.id = l.film_id " +
+                "where l.film_id in (select film_id from likes where user_id = ?) " +
+                "and l.film_id in (select film_id from likes where user_id = ?) " +
+                "group by f.id " +
+                "order by count(l.user_id) desc";
+
+        SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sql, userId, friendId);
+        while (rowSet.next()) {
+            films.add(mapRowSetToFilm(rowSet));
+        }
+        return films;
+    }
+
     @Override
     public Collection<Film> getRecommendations(User user) {
         // получаем все фильмы, которым поставили лайки пользователи совпадающие с фильмами, которым поставил лайк user
