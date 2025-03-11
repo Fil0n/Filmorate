@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmrate.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,14 +33,14 @@ public class DirectorController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Director create(@RequestBody Director director) {
+    public Director create(@Valid  @RequestBody Director director) {
         log.info("Получен запрос на добавление режиссёра: {}", director.toString());
         return directorService.create(director);
     }
 
     @PutMapping
     @ResponseStatus(HttpStatus.OK)
-    public Director update(@RequestBody Director director) {
+    public Director update(@Valid @RequestBody Director director) {
         log.info("Получен запрос на изменение режиссёра: {}", director.toString());
         return directorService.update(director);
     }
