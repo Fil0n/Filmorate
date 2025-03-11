@@ -114,6 +114,10 @@ public class FilmService {
         feedService.create(EventType.LIKE, Operation.REMOVE, userId, filmId);
     }
 
+    public Collection<Film> search(String query, Set<String> by) {
+        return filmStorage.search(query, by);
+    }
+
     public List<Film> getSortedFilms(int directorId, String sortBy) {
         return filmStorage.sortFilms(directorId, sortBy);
     }

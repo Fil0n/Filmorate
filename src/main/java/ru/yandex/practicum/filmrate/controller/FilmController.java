@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,6 +20,7 @@ import ru.yandex.practicum.filmrate.model.Film;
 import ru.yandex.practicum.filmrate.service.FilmService;
 
 import java.util.Collection;
+import java.util.Set;
 import java.util.List;
 
 @Slf4j
@@ -88,6 +90,13 @@ public class FilmController {
     public Film read(@PathVariable("id") long id) {
         log.info("Получен запрос на получение фильма с идентификатором: {}", id);
         return filmService.read(id);
+    }
+
+    @GetMapping("/search")
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<Film> search(@RequestParam("query") String query, @RequestParam(value = "by", defaultValue = "title,director") Set<String> by) {
+        log.info("Получен запрос на поиск фильма по запросу: {}, по полю: {}", query, by);
+        return filmService.search(query, by);
     }
 
     @GetMapping("/director/{directorId}")

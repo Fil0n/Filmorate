@@ -82,4 +82,9 @@ public class InMemoryFilmStorage implements FilmStorage {
     public Collection<Film> getRecommendations(User user) {
         return List.of();
     }
+
+    @Override
+    public Collection<Film> search(String query, Set<String> by) {
+        return List.of();
+    }
 }

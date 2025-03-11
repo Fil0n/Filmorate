@@ -252,6 +252,39 @@ public class FilmDbStorage implements FilmStorage {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public Collection<Film> search(String queryString, Set<String> by) {
+        String query = """
+            select f.id, f.name, f.description, f.release_date, f.mpa, f.duration
+            from film f
+            left join film_director fd on f.id = fd.film_id
+            left join directors d on d.director_id = fd.director_id
+            left join likes on f.id = likes.film_id
+            where
+        """;
+
+        List<Object> params = new ArrayList<>();
+        if (by.contains("title")) {
+            query += " REGEXP_LIKE(lower(f.name), concat('(^| )',?))";
+            params.add(queryString.toLowerCase());
+        }
+
+        if (by.contains("director")) {
+            query += by.contains("title") ? " or " : "";
+            query += "REGEXP_LIKE(lower(d.director_name), concat('(^| )',?))";
+            params.add(queryString.toLowerCase());
+        }
+        query += " group by fd.film_id order by count(likes.film_id) desc";
+
+        SqlRowSet filmsSet = jdbcTemplate.queryForRowSet(query, params.toArray());
+
+        List<Film> films = new ArrayList<>();
+        while (filmsSet.next()) {
+            films.add(mapRowSetToFilm(filmsSet));
+        }
+        return films;
+    }
+
     public Film mapRowSetToFilm(SqlRowSet rowSet) {
         MPA mpa = mpaService.findAll().stream()
                 .filter(m -> m.getId() == rowSet.getInt("mpa"))
