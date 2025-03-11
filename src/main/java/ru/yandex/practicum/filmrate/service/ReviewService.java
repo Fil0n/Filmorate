@@ -56,7 +56,7 @@ public class ReviewService {
                         review.getUserId())));
 
         Review createdReview =  reviewStorage.create(review);
-        feedService.create(EventType.REVIEW, Operation.ADD, review.getUserId(), review.getId());
+        feedService.create(EventType.REVIEW, Operation.ADD, createdReview.getUserId(), createdReview.getId());
         return createdReview;
     }
 
