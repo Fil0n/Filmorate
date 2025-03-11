@@ -10,8 +10,9 @@ import ru.yandex.practicum.filmrate.exception.NotFoundException;
 import ru.yandex.practicum.filmrate.model.EventType;
 import ru.yandex.practicum.filmrate.model.Feed;
 import ru.yandex.practicum.filmrate.model.Operation;
+import ru.yandex.practicum.filmrate.model.Film;
 import ru.yandex.practicum.filmrate.model.User;
-import ru.yandex.practicum.filmrate.storage.feed.FeedStorage;
+import ru.yandex.practicum.filmrate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmrate.storage.user.UserStorage;
 
 import java.util.Collection;
@@ -24,6 +25,8 @@ import java.util.Optional;
 public class UserService {
     @Autowired
     private UserStorage userStorage;
+    @Autowired
+    private FilmStorage filmStorage;
 
     @Autowired
     private FeedService feedService;
@@ -45,7 +48,9 @@ public class UserService {
     }
 
     public User read(Long userId) {
-        return userStorage.read(userId);
+        User user = Optional.ofNullable(userStorage.read(userId))
+                .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.USER_NOT_FOUND_ERROR, userId)));
+        return user;
     }
 
     public List<User> getFriends(Long userId) {
@@ -86,6 +91,12 @@ public class UserService {
     public List<Feed> getFeed(long id) {
         log.info("Получен запрос получение ленты событий для пользователя: {}", id);
         return feedService.getFeed(id);
+    }
+
+    public Collection<Film> getFilmRecommendations(Long userId) {
+        User user = Optional.ofNullable(userStorage.read(userId))
+                .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.USER_NOT_FOUND_ERROR, userId)));
+        return filmStorage.getRecommendations(user);
     }
 
 }
