@@ -74,8 +74,10 @@ public class ReviewService {
         Optional.ofNullable(reviewStorage.getById(newReview.getId()))
                 .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.REVIEW_NOT_FOUND_ERROR,
                         newReview.getId())));
-            feedService.create(EventType.REVIEW, Operation.UPDATE, newReview.getUserId(), newReview.getId());
-            return reviewStorage.update(newReview);
+
+        Review updatedReview = reviewStorage.update(newReview);
+        feedService.create(EventType.REVIEW, Operation.UPDATE, updatedReview.getUserId(), updatedReview.getId());
+        return updatedReview;
 
     }
 
