@@ -102,10 +102,7 @@ public class ReviewDbStorage implements ReviewStorage {
                 newReview.getIsPositiveReview(),
                 newReview.getId());
 
-        Review review = getById(newReview.getId());
-        review.setRating(review.getRating());
-
-        return review;
+        return getById(newReview.getId());
     }
 
 
