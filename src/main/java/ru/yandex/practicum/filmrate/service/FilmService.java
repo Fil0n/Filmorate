@@ -119,7 +119,13 @@ public class FilmService {
     }
 
     public List<Film> getSortedFilms(int directorId, String sortBy) {
-        return filmStorage.sortFilms(directorId, sortBy);
+        List<Film> films = filmStorage.sortFilms(directorId, sortBy);
+
+        if (films.isEmpty()) {
+            throw new NotFoundException(ExceptionMessages.FILMS_NOT_FOUND_ERROR);
+        }
+
+        return films;
     }
 
     public List<Film> getCommonFilms(long userId, long friendId) {
@@ -127,6 +133,6 @@ public class FilmService {
                 .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.USER_NOT_FOUND_ERROR, userId)));
         User friend = Optional.ofNullable(userStorage.read(friendId))
                 .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.USER_NOT_FOUND_ERROR, friendId)));
-        return filmStorage.getCommonFilms(userId,friendId);
+        return filmStorage.getCommonFilms(userId, friendId);
     }
 }
