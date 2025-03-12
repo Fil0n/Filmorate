@@ -36,11 +36,21 @@ public class UserService {
     }
 
     public User create(User user) {
+        user = replaceEmptyName(user);
         return userStorage.create(user);
     }
 
     public User update(User user) {
+        user = replaceEmptyName(user);
         return userStorage.update(user);
+    }
+
+    private User replaceEmptyName(User user) {
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+        }
+
+        return user;
     }
 
     public void delete(Long userId) {
