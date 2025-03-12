@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmrate.model.Film;
 import ru.yandex.practicum.filmrate.model.Genre;
 import ru.yandex.practicum.filmrate.model.Operation;
 import ru.yandex.practicum.filmrate.model.User;
+import ru.yandex.practicum.filmrate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmrate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmrate.storage.user.UserStorage;
 
@@ -20,6 +21,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -33,6 +35,8 @@ public class FilmService {
     private MPAService mpaService;
     @Autowired
     private GenreSevice genreSevice;
+    @Autowired
+    private final DirectorStorage directorStorage;
     @Autowired
     private FeedService feedService;
 
@@ -80,11 +84,16 @@ public class FilmService {
         Film film = filmStorage.read(filmId);
 
         film.setGenres(genreSevice.getGenresByFilmId(filmId));
+        film.setDirectors(directorStorage.getDirectorsByFilmId(filmId));
         return film;
     }
 
-    public Collection<Film> getMostPopular(Integer count) {
-        return filmStorage.getMostPopular(count);
+    public Collection<Film> getMostPopular(Integer count, Integer genreId, Integer year) {
+        if (genreId != null) {
+            genreSevice.read(genreId);
+        }
+
+        return filmStorage.getMostPopular(count, genreId, year);
     }
 
     public void addLike(Long filmId, Long userId) {
@@ -107,5 +116,23 @@ public class FilmService {
 
     public Collection<Film> search(String query, Set<String> by) {
         return filmStorage.search(query, by);
+    }
+
+    public List<Film> getSortedFilms(int directorId, String sortBy) {
+        List<Film> films = filmStorage.sortFilms(directorId, sortBy);
+
+        if (films.isEmpty()) {
+            throw new NotFoundException(ExceptionMessages.FILMS_NOT_FOUND_ERROR);
+        }
+
+        return films;
+    }
+
+    public List<Film> getCommonFilms(long userId, long friendId) {
+        User user = Optional.ofNullable(userStorage.read(userId))
+                .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.USER_NOT_FOUND_ERROR, userId)));
+        User friend = Optional.ofNullable(userStorage.read(friendId))
+                .orElseThrow(() -> new NotFoundException(String.format(ExceptionMessages.USER_NOT_FOUND_ERROR, friendId)));
+        return filmStorage.getCommonFilms(userId, friendId);
     }
 }

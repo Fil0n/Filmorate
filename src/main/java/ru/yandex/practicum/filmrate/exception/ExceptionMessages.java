@@ -6,4 +6,5 @@ public class ExceptionMessages {
     public static final String GENRE_NOT_FOUND_ERROR = "Жанр с id = %d не найден";
     public static final String MPA_NOT_FOUND_ERROR = "Рейтинг с id = %d не найден";
     public static final String REVIEW_NOT_FOUND_ERROR = "Ревью с id = %d не найден";
+    public static final String FILMS_NOT_FOUND_ERROR = "Фильмы не найдены";
 }

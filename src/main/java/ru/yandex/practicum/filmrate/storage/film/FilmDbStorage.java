@@ -98,13 +98,13 @@ public class FilmDbStorage implements FilmStorage {
 
     private void updateDirectors(Film film) {
         Set<Director> directors = film.getDirectors();
+        String sqlForDelete = "delete from film_director where film_id = ?";
+        jdbcTemplate.update(sqlForDelete, film.getId());
+
         if (directors == null || directors.isEmpty()) {
             film.setDirectors(new HashSet<>());
             return;
         }
-
-        String sqlForDelete = "delete from film_director where film_id = ?";
-        jdbcTemplate.update(sqlForDelete, film.getId());
 
         StringBuilder query = new StringBuilder("insert into film_director(film_id, director_id) values ");
 
