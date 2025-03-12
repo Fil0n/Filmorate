@@ -338,7 +338,7 @@ public class FilmDbStorage implements FilmStorage {
                 + "group by fd.film_id ";
         List<Film> filmsSorted = new ArrayList<>();
         if (sortBy.equals("likes")) {
-            SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlPartOne + "join likes on f.id = likes.film_id " + sqlPartTwo + "order by count(likes.film_id) desc", directorId);
+            SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlPartOne + "left join likes on f.id = likes.film_id " + sqlPartTwo + "order by count(likes.film_id) desc", directorId);
             while (sqlRowSet.next()) {
                 filmsSorted.add(mapRowSetToFilm(sqlRowSet));
             }

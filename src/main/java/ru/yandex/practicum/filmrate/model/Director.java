@@ -1,11 +1,14 @@
 package ru.yandex.practicum.filmrate.model;
 
+import jakarta.validation.constraints.NotBlank;
+import lombok.Builder;
 import lombok.Data;
-import jakarta.validation.constraints.NotNull;
 
 @Data
+@Builder(toBuilder = true)
 public class Director {
     private int id;
-    @NotNull
-    private String name;
+
+    @NotBlank
+    private final String name;
 }
