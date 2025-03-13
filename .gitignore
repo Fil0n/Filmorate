@@ -39,9 +39,13 @@ build/
 
 ### Mac OS ###
 .DS_Store
-.idea/misc.xml
 .db
 .target
 *.class
 *.jar
 *.DS_Store
+.DS_Store
+.idea/misc.xml
+*.db
+
+/.idea
