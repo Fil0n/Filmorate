@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import ru.yandex.practicum.filmrate.model.Feed;
+import ru.yandex.practicum.filmrate.model.Film;
 import ru.yandex.practicum.filmrate.model.User;
 import ru.yandex.practicum.filmrate.service.UserService;
 
@@ -52,14 +54,14 @@ public class UserController {
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public User read(long id) {
+    public User read(@PathVariable("id") Long id) {
         log.info("Получен запрос получение пользователя: {}", id);
         return userService.read(id);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public void delete(long id) {
+    public void delete(@PathVariable("id") Long id) {
         log.info("Получен запрос удаление пользователя: {}", id);
         userService.delete(id);
     }
@@ -92,5 +94,19 @@ public class UserController {
     public void removeFriend(@PathVariable("id") Long userId,
                              @PathVariable("friendId") Long friendId) {
         userService.removeFriend(userId, friendId);
+    }
+
+    @GetMapping("/{id}/recommendations")
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<Film> getFilmRecommendations(@PathVariable("id") Long userId) {
+        log.info("Вызван метод GET /users/{id}/recommendations с id = {}", userId);
+        return userService.getFilmRecommendations(userId);
+    }
+
+    @GetMapping("/{id}/feed")
+    @ResponseStatus(HttpStatus.OK)
+    public List<Feed> feed(@PathVariable("id") long id) {
+        log.info("Получен запрос получение ленты событий для пользователя: {}", id);
+        return userService.getFeed(id);
     }
 }

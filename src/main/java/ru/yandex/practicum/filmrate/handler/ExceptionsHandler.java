@@ -10,10 +10,13 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import ru.yandex.practicum.filmrate.exception.DataDoNotExistException;
 import ru.yandex.practicum.filmrate.exception.NotFoundException;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestControllerAdvice
@@ -56,5 +59,14 @@ public class ExceptionsHandler {
     public ErrorResponse handleException(final Exception e) {
         log.warn("Непредвиденная ошибка:", e);
         return new ErrorResponse("Непредвиденная ошибка");
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, String> dealWithDataDoNotExistException(DataDoNotExistException e) {
+        Map<String, String> response = new HashMap<>();
+        log.error("error", e.getMessage());
+        response.put("error", e.getMessage());
+        return response;
     }
 }
