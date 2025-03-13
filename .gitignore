@@ -49,3 +49,4 @@ build/
 *.db
 
 /.idea
+.idea/misc.xml
