@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 @Component
@@ -52,7 +54,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getMostPopular(Integer count) {
+    public Collection<Film> getMostPopular(Integer count, Integer genreId, Integer year) {
         return films.values()
                 .stream()
                 .sorted((film1, film2) -> {
@@ -76,5 +78,24 @@ public class InMemoryFilmStorage implements FilmStorage {
         likeUsers.remove(user);
     }
 
+    @Override
+    public List<Film> sortFilms(int directorId, String sortBy) {
+        List<Film> films = new ArrayList<>();
+        return films;
+    }
 
+    @Override
+    public Collection<Film> getRecommendations(User user) {
+        return List.of();
+    }
+
+    @Override
+    public Collection<Film> search(String query, Set<String> by) {
+        return null;
+    }
+
+    @Override
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        return new ArrayList<>();
+    }
 }
