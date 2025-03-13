@@ -45,3 +45,6 @@ build/
 *.class
 *.jar
 *.DS_Store
+*.db
+.idea/misc.xml
+.idea/misc.xml
