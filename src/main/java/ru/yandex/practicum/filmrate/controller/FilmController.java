@@ -20,6 +20,8 @@ import ru.yandex.practicum.filmrate.model.Film;
 import ru.yandex.practicum.filmrate.service.FilmService;
 
 import java.util.Collection;
+import java.util.Set;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -53,31 +55,33 @@ public class FilmController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public void delete(long id) {
+    public void delete(@PathVariable("id") Long id) {
         log.info("Получен запрос на удаление фильма с идентификатором: {}", id);
         filmService.delete(id);
     }
 
     @GetMapping("/popular")
     @ResponseStatus(HttpStatus.OK)
-    public Collection<Film> getPopularFilms(@RequestParam(value = "count", defaultValue = "10") Integer count) {
-        log.info("Получен запрос на получение популярных фильмо в количестве: {}", count);
-        return filmService.getMostPopular(count);
+    public Collection<Film> getPopularFilms(@RequestParam(required = false) Integer count,
+                                            @RequestParam(required = false) Integer genreId,
+                                            @RequestParam(required = false) Integer year) {
+        log.info("Получен запрос на получение популярных фильмов");
+        return filmService.getMostPopular(count, genreId, year);
     }
 
     @PutMapping("/{id}/like/{userId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void addLike(@PathVariable("id") Long filmId,
                         @PathVariable("userId") Long userId) {
-        log.info("Получен запрос на добавление лайка фильма с id = {} пользователем с шв = {}", filmId, userId);
+        log.info("Получен запрос на добавление лайка фильма с id = {} пользователем с id = {}", filmId, userId);
         filmService.addLike(filmId, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseStatus(HttpStatus.OK)
     public void removeLike(@PathVariable("id") Long filmId,
                            @PathVariable("userId") Long userId) {
-        log.info("Получен запрос на удаление лайка фильма с id = {} пользователем с шв = {}", filmId, userId);
+        log.info("Получен запрос на удаление лайка фильма с id = {} пользователем с id = {}", filmId, userId);
         filmService.removeLike(filmId, userId);
     }
 
@@ -88,4 +92,24 @@ public class FilmController {
         return filmService.read(id);
     }
 
+    @GetMapping("/search")
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<Film> search(@RequestParam("query") String query, @RequestParam(value = "by", defaultValue = "title,director") Set<String> by) {
+        log.info("Получен запрос на поиск фильма по запросу: {}, по полю: {}", query, by);
+        return filmService.search(query, by);
+    }
+
+    @GetMapping("/director/{directorId}")
+    @ResponseStatus(HttpStatus.OK)
+    public List<Film> getSortedFilms(@PathVariable int directorId, @RequestParam String sortBy) {
+        log.info("Получен запрос на получение списка фильмов режиссёра с идентификатором: {}", directorId);
+        return filmService.getSortedFilms(directorId, sortBy);
+    }
+
+    @GetMapping("/common")
+    public Collection<Film> getCommonFilms(
+            @RequestParam long userId,
+            @RequestParam long friendId) {
+        return filmService.getCommonFilms(userId, friendId);
+    }
 }
